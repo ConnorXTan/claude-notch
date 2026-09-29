@@ -1,7 +1,7 @@
 # Testing checklist
 
 The plan's pass conditions, with the date each last passed and how. "Unit"
-means `swift test` (the C suite is `make test`); "snapshot" means the app's
+means `swift test`; "snapshot" means the app's
 offscreen render (`LIGHTSWITCH_SNAPSHOT_DIR` + `kill -USR1`) was inspected;
 "manual" means someone has to be at the Mac. Re-run the table after a change
 to the notch layout, the hook script, or a Claude Code update.
@@ -23,8 +23,6 @@ to the notch layout, the hook script, or a Claude Code update.
 | 3 | `$PPID` in a real hook resolves to the `claude` process | `pid` in the session file is the claude process | pending | manual; the script walks up to six parents looking for "claude" |
 | 4 | A session turns red while the notch is closed | Peek beside the notch for 3 s, sound once, dot pulses until acknowledged | 2026-09-24 | snapshot (sound path is `NSSound(named: "Glass")`, exercised with sound off) |
 | 4 | `idle_prompt` (`done` with `idle: true`) | Green dot breathes slowly, no sound | 2026-09-24 | snapshot |
-| 5 | Replay fixtures through the sensor engine in switch mode | `hold`/`tap` → cover, uncover; `idle`/`walk_past`/`drift` → nothing; `dark` → fault | 2026-09-24 | unit (`SensorEngineTests`) |
-| 5 | Cup a hand over the notch in a lit room | Fires once per cover, re-arms on uncover; refuses under 25 lux with a message in Settings | pending | manual (the display was asleep: both the app and the C CLI reported "no ambient light sensor found"; the app retries every 30 s and on wake) |
 | 6 | Click a red dot / row with VS Code, iTerm, Terminal sessions | The right tab comes forward (iTerm, Terminal); the window whose terminal runs the session comes forward (VS Code), even for a session that moved into a worktree, and no new window opens | pending | manual (needs the Automation permission prompt for iTerm/Terminal); the folder choice is unit-tested (`TerminalWindowTests`: the terminal shell's directory and VS Code's own list of open windows, from its `storage.json`) |
 | 6 | Menu bar: Launch at Login | Registered as a login item from the bundled app | pending | manual |
 

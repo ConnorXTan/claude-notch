@@ -5,7 +5,7 @@ import LightswitchKit
 
 /// The one object that knows about every notch window. It carries the
 /// transient "peek" shown beside the closed notch and lets non-view code
-/// (the light sensor, the menu) open or close every display at once.
+/// (the menu, the debug signal) open or close every display at once.
 @MainActor
 final class NotchCoordinator: ObservableObject {
     static let shared = NotchCoordinator()

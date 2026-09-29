@@ -25,7 +25,6 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
                                                pid: pid_t(session.pid))
             Log.note(Log.sessions, "focus \(session.folderName) (\(session.termProgram)) → \(result)")
         }
-        SensorController.shared.apply()
 
         observers.append(NotificationCenter.default.addObserver(
             forName: NSApplication.didChangeScreenParametersNotification,
