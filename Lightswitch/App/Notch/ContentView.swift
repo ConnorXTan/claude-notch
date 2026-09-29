@@ -191,7 +191,7 @@ struct ContentView: View {
 
     /// Hover opened the panel, so hover must be able to close it even when
     /// the mouse-out never arrives: while it is open, look at the pointer
-    /// now and then. A panel opened by a click or the gesture is not polled;
+    /// now and then. A panel opened by a click or the menu is not polled;
     /// it stays until the pointer visits and leaves, as before.
     private func startWatchdog() {
         watchdog?.cancel()
