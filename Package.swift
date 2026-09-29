@@ -1,36 +1,36 @@
 // swift-tools-version:5.9
-// Lightswitch — the notch as a status light for Claude Code sessions.
+// Claude Notch — the notch as a status light for Claude Code sessions.
 //
-//   swift build            debug binary in .build/debug/Lightswitch
+//   swift build            debug binary in .build/debug/ClaudeNotch
 //   swift test             the unit tests
-//   make app               release build wrapped as build/Lightswitch.app
+//   make app               release build wrapped as build/ClaudeNotch.app
 //   open Package.swift     the same targets inside Xcode
 //
-// Layout: LightswitchKit holds everything testable without a window; the
-// Lightswitch executable is the AppKit/SwiftUI shell.
+// Layout: ClaudeNotchKit holds everything testable without a window; the
+// ClaudeNotch executable is the AppKit/SwiftUI shell.
 import PackageDescription
 
 let package = Package(
-    name: "Lightswitch",
+    name: "ClaudeNotch",
     platforms: [.macOS(.v14)],
     products: [
-        .executable(name: "Lightswitch", targets: ["Lightswitch"]),
-        .library(name: "LightswitchKit", targets: ["LightswitchKit"]),
+        .executable(name: "ClaudeNotch", targets: ["ClaudeNotch"]),
+        .library(name: "ClaudeNotchKit", targets: ["ClaudeNotchKit"]),
     ],
     targets: [
         .target(
-            name: "LightswitchKit",
-            path: "Lightswitch/Kit"
+            name: "ClaudeNotchKit",
+            path: "ClaudeNotch/Kit"
         ),
         .executableTarget(
-            name: "Lightswitch",
-            dependencies: ["LightswitchKit"],
-            path: "Lightswitch/App"
+            name: "ClaudeNotch",
+            dependencies: ["ClaudeNotchKit"],
+            path: "ClaudeNotch/App"
         ),
         .testTarget(
-            name: "LightswitchTests",
-            dependencies: ["LightswitchKit"],
-            path: "Lightswitch/Tests"
+            name: "ClaudeNotchTests",
+            dependencies: ["ClaudeNotchKit"],
+            path: "ClaudeNotch/Tests"
         ),
     ],
     swiftLanguageVersions: [.v5]

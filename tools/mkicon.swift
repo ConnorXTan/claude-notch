@@ -1,7 +1,7 @@
 // mkicon.swift — draws the app icon: the notch, with four session dots.
 //
-//   swift tools/mkicon.swift build/Lightswitch.iconset
-//   iconutil -c icns build/Lightswitch.iconset -o build/Lightswitch.icns
+//   swift tools/mkicon.swift build/ClaudeNotch.iconset
+//   iconutil -c icns build/ClaudeNotch.iconset -o build/ClaudeNotch.icns
 //
 // Kept as code rather than a committed binary so the icon is reproducible
 // and diffable. macOS app icons carry their own rounded-square shape, inset
@@ -88,7 +88,7 @@ func png(_ image: NSImage, pixels: Int) -> Data {
     return rep.representation(using: .png, properties: [:])!
 }
 
-let out = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "Lightswitch.iconset"
+let out = CommandLine.arguments.count > 1 ? CommandLine.arguments[1] : "ClaudeNotch.iconset"
 try FileManager.default.createDirectory(atPath: out, withIntermediateDirectories: true)
 for base in [16, 32, 128, 256, 512] {
     for scale in [1, 2] {

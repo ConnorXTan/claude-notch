@@ -2,7 +2,7 @@
 
 The plan's pass conditions, with the date each last passed and how. "Unit"
 means `swift test`; "snapshot" means the app's
-offscreen render (`LIGHTSWITCH_SNAPSHOT_DIR` + `kill -USR1`) was inspected;
+offscreen render (`CLAUDE_NOTCH_SNAPSHOT_DIR` + `kill -USR1`) was inspected;
 "manual" means someone has to be at the Mac. Re-run the table after a change
 to the notch layout, the hook script, or a Claude Code update.
 
@@ -38,8 +38,8 @@ be invisible).
 
 ```bash
 mkdir -p /tmp/sessions
-LIGHTSWITCH_SESSIONS_DIR=/tmp/sessions LIGHTSWITCH_SNAPSHOT_DIR=/tmp/snaps .build/debug/Lightswitch &
+CLAUDE_NOTCH_SESSIONS_DIR=/tmp/sessions CLAUDE_NOTCH_SNAPSHOT_DIR=/tmp/snaps .build/debug/ClaudeNotch &
 printf '{"session_id":"a","state":"needs_you","cwd":"/tmp/x","pid":1,"tty":"","term_program":"","idle":false,"updated_at":0}' > /tmp/sessions/a.json
-kill -USR2 $(pgrep -x Lightswitch)   # toggle the notch open
-kill -USR1 $(pgrep -x Lightswitch)   # write PNGs of every notch window to /tmp/snaps
+kill -USR2 $(pgrep -x ClaudeNotch)   # toggle the notch open
+kill -USR1 $(pgrep -x ClaudeNotch)   # write PNGs of every notch window to /tmp/snaps
 ```

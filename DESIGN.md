@@ -1,5 +1,5 @@
 ---
-name: Lightswitch
+name: Claude Notch
 description: The MacBook notch as a status light for Claude Code sessions.
 colors:
   notch-black: "#000000"
@@ -16,11 +16,8 @@ colors:
   state-working: "systemYellow"
   state-needs-you: "systemRed"
   state-done: "systemGreen"
-  settings-accent: "accentColor"
-  settings-warning: "systemOrange"
   settings-error: "systemRed"
   settings-secondary: "secondary"
-  settings-track: "quaternary"
   icon-tile-top: "#29292e"
   icon-tile-bottom: "#121214"
 typography:
@@ -156,26 +153,17 @@ components:
     typography: "{typography.button}"
     rounded: "{rounded.pill}"
     padding: "5px 12px"
-  ratio-bar:
-    backgroundColor: "{colors.settings-track}"
-    rounded: "{rounded.pill}"
-    width: "180px"
-    height: "6px"
-  ratio-bar-fill:
-    backgroundColor: "{colors.settings-accent}"
-  ratio-bar-fill-covered:
-    backgroundColor: "{colors.settings-warning}"
   settings-form:
     width: "460px"
 ---
 
-# Design System: Lightswitch
+# Design System: Claude Notch
 
 ## Overview
 
 **Creative North Star: "The Status Light"**
 
-Lightswitch draws nothing of its own except a black shape that extends the
+Claude Notch draws nothing of its own except a black shape that extends the
 MacBook's notch and the coloured dots inside it. The world is the platform's:
 the system font at 10 to 13 pt, the system's semantic status colours, standard
 grouped Settings controls, a text-only menu bar menu. Personality lives in the
@@ -216,10 +204,7 @@ A black ground, white at fixed opacity steps, and the Mac's own status colours.
 - **White 09**: the session row hover fill.
 
 ### Settings (system semantics, adaptive to light and dark)
-- **Accent** (`accentColor`): the ratio bar's fill while the sensor is armed.
-- **Warning** (`systemOrange`): the ratio bar's fill once the reading drops below the cover threshold.
-- **Secondary** (`.secondary`): footers, "Needs Accessibility permission", the ratio bar's threshold ticks; at 50 % opacity, the hooks status dot when hooks are not installed.
-- **Track** (`.quaternary`): the ratio bar's empty capsule.
+- **Secondary** (`.secondary`): footers; at 50 % opacity, the hooks status dot when hooks are not installed.
 
 ### App icon (frozen values)
 - **Icon Tile** (`#29292e` to `#121214`, top to bottom): the squircle behind the notch in the app icon; a faint top light on a dark, slightly cool grey.
@@ -266,7 +251,7 @@ notch's height (or the menu bar height on displays without a notch).
 - **Open:** 440 pt wide (was 400; beside the header's clear notch gap each side has 87 pt, enough for "Claude Code" at 70 pt and "12 terminals" at 65 pt on one line), 23 pt horizontal padding (the 19 pt top flare, inside which the shape's sides sit, plus 4 pt, so text lands 14 pt inside the visible edge and row dots 26 pt) and 10 pt bottom padding, 4 pt between header and list. The header row is the closed height and leaves the same notch-width + 10 pt clear gap in its middle. Rows are 32 pt with 1 pt between; after six rows the list scrolls at 6 × 33 = 198 pt.
 - **Row:** 10 pt horizontal padding, 10 pt between dot, name, ID and state; the age column is a fixed 32 pt, right-aligned; at least 8 pt of spacer before the state word.
 - **Empty state:** centred, 6 pt vertical rhythm, minimum 64 pt tall, 6 pt vertical padding.
-- **Settings:** a grouped Form, 460 pt wide, three sections (Notch, Light sensor, Claude Code hooks). The ratio bar is 180 × 6 pt.
+- **Settings:** a grouped Form, 460 pt wide, two sections (Notch, Claude Code hooks).
 - **Dot slots:** six fixed slots, three columns of two. Empty slots keep their space so a dot never shifts when a session before it ends.
 
 ## Elevation & Depth
@@ -295,7 +280,7 @@ b = 30 % of its notch height, hanging from a squircle tile with corner radius
 22.5 % of the tile.
 
 Inside the shape: dots are circles; rows are 8 pt continuous-corner rounded
-rectangles; the install button and the ratio bar are capsules.
+rectangles; the install button is a capsule.
 
 ## Components
 
@@ -334,19 +319,15 @@ rectangles; the install button and the ratio bar are capsules.
 
 ### Buttons
 - **Install hooks (on the notch):** 12 pt semibold white on a white 14 % capsule, 12 × 5 pt padding, plain button style, 4 pt above.
-- **Settings and menu:** standard system buttons ("Recalibrate", "Install hooks", "Remove hooks", "Show script in Finder"), disabled when not applicable.
+- **Settings and menu:** standard system buttons ("Install hooks", "Remove hooks", "Show script in Finder"), disabled when not applicable.
 
-### Ratio Bar (Settings)
-- 180 × 6 pt capsule track in `.quaternary`; fill in the accent colour, or `systemOrange` once below the cover threshold; width = clamped reading ÷ baseline, `linear 0.1 s`.
-- Two 1 pt `.secondary` ticks, 4 pt taller than the bar, at the cover and uncover thresholds.
-- Labelled "Light level N percent of baseline".
 
 ### Settings Form
-- Grouped form style, 460 pt wide. Toggles, a picker, `LabeledContent` rows, secondary-colour footers. Errors in `.callout`, `systemRed`. Hooks status: an 8 pt circle, `systemGreen` when installed, secondary at 50 % otherwise.
+- Grouped form style, 460 pt wide. Toggles, `LabeledContent` rows, secondary-colour footers. Errors in `.callout`, `systemRed`. Hooks status: an 8 pt circle, `systemGreen` when installed, secondary at 50 % otherwise.
 
 ### Status Menu and Icon
 - **Icon:** 18 pt template image, a 2 × 2 grid of 3 pt dots with 1.5 pt gaps; follows the menu bar's light or dark appearance.
-- **Menu:** a summary line ("2 sessions · 1 needs you" or "Hooks not installed"), then text items and dividers only: Install Claude Code Hooks…, Open Notch, Launch at Login, Settings… (⌘,), Quit Lightswitch (⌘Q).
+- **Menu:** a summary line ("2 sessions · 1 needs you" or "Hooks not installed"), then text items and dividers only: Install Claude Code Hooks…, Open Notch, Launch at Login, Settings… (⌘,), Quit Claude Notch (⌘Q).
 
 ### App Icon
 - Dark squircle tile (10 % inset, 22.5 % corners, vertical gradient) with the notch silhouette hanging from its top edge at 62 % width and 30 % height; four dots inside at 26 % of the notch height, gaps 1.1 × dot, in the order done, working, needs you (glowing), idle.
@@ -360,14 +341,14 @@ rectangles; the install button and the ratio bar are capsules.
 - **Do** animate only state changes: springs for open/close, `smooth 0.3` for the peek, the pulse for unacknowledged red, the breathe for done-and-waiting, `easeOut 0.12` for row hover.
 - **Do** honour Reduce Motion: no pulse, no breathe, the white ring instead.
 - **Do** keep the four dot slots fixed and overflow into "+N".
-- **Do** use standard grouped Form controls in Settings; draw custom only the ratio bar and the 8 pt status dot.
+- **Do** use standard grouped Form controls in Settings; draw custom only the 8 pt status dot.
 
 ### Don't:
 - **Don't** draw behind the physical notch; leave the measured gap clear in the closed, peek and open layouts.
 - **Don't** introduce a custom typeface, glyph icons or bitmap images: the menu bar icon and app icon are drawn dots and the notch silhouette.
 - **Don't** give a surface a shadow at rest; the panel lift and dot glow are opacity 0 until open, hover or pulse.
 - **Don't** use grey for idle or for secondary text on black; use white at the recorded opacity.
-- **Don't** tint chrome with a state colour; red, yellow and green appear on dots, state words and the peek detail only (and, in Settings, `systemRed` for errors and `systemOrange` for the covered sensor).
+- **Don't** tint chrome with a state colour; red, yellow and green appear on dots, state words and the peek detail only (and, in Settings, `systemRed` for errors).
 
 ## Addendum (2026-09-24, projects branch)
 

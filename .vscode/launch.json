@@ -4,21 +4,21 @@
             "type": "swift",
             "request": "launch",
             "args": [],
-            "cwd": "${workspaceFolder:lightswitch}",
-            "name": "Debug Lightswitch",
-            "target": "Lightswitch",
+            "cwd": "${workspaceFolder:claude-notch}",
+            "name": "Debug ClaudeNotch",
+            "target": "ClaudeNotch",
             "configuration": "debug",
-            "preLaunchTask": "swift: Build Debug Lightswitch"
+            "preLaunchTask": "swift: Build Debug ClaudeNotch"
         },
         {
             "type": "swift",
             "request": "launch",
             "args": [],
-            "cwd": "${workspaceFolder:lightswitch}",
-            "name": "Release Lightswitch",
-            "target": "Lightswitch",
+            "cwd": "${workspaceFolder:claude-notch}",
+            "name": "Release ClaudeNotch",
+            "target": "ClaudeNotch",
             "configuration": "release",
-            "preLaunchTask": "swift: Build Release Lightswitch"
+            "preLaunchTask": "swift: Build Release ClaudeNotch"
         }
     ]
 }
