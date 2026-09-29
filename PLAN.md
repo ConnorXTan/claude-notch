@@ -1,5 +1,10 @@
 # Lightswitch Overhaul Plan
 
+> **2026-09-29:** historical. The light sensor parts of this plan (the gesture,
+> `CLightswitch`, the C CLI) moved to the separate notchpet project, and the app
+> was renamed Claude Notch (`ClaudeNotch/`, repo `claude-notch`). Paths and
+> names below are as they were when the plan was written.
+
 Sep 24, 2026 · @Connor
 
 ## Goal and scope
