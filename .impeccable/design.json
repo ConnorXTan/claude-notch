@@ -149,7 +149,7 @@
       "Don't introduce a custom typeface, glyph icons or bitmap images: the menu bar icon and app icon are drawn dots and the notch silhouette.",
       "Don't give a surface a shadow at rest; the panel lift and dot glow are opacity 0 until open, hover or pulse.",
       "Don't use grey for idle or for secondary text on black; use white at the recorded opacity.",
-      "Don't tint chrome with a state colour; red, yellow and green appear on dots, state words and the peek detail only (and, in Settings, systemRed for errors and systemOrange for the covered sensor)."
+      "Don't tint chrome with a state colour; red, yellow and green appear on dots, state words and the peek detail only (and, in Settings, systemRed for errors)."
     ]
   }
 }
