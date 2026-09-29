@@ -1,0 +1,19 @@
+import Foundation
+import os
+
+/// Unified logging, plus a stderr echo when the app runs in snapshot mode so
+/// a terminal session can watch it without Console.
+enum Log {
+    static let app = Logger(subsystem: "com.connortan.claudenotch", category: "app")
+    static let sessions = Logger(subsystem: "com.connortan.claudenotch", category: "sessions")
+
+    static let echo = ProcessInfo.processInfo.environment["CLAUDE_NOTCH_SNAPSHOT_DIR"] != nil
+
+    static func note(_ logger: Logger, _ message: String) {
+        logger.info("\(message, privacy: .public)")
+        if echo {
+            let stamp = String(format: "%.3f", Date().timeIntervalSince1970)
+            FileHandle.standardError.write(Data("\(stamp) \(message)\n".utf8))
+        }
+    }
+}

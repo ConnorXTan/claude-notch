@@ -1,3 +1,55 @@
+import Foundation
+
+/// The hook script and the hooks block, as Swift constants so the app can
+/// install them without shipping resources. `source` must stay byte-identical
+/// to `hooks/notch.sh`; `HookInstallerTests` checks that.
+public enum HookScript {
+    /// Substring that marks a hook entry as ours.
+    public static let marker = "notch.sh"
+
+    /// Where Claude Code will find the script once installed.
+    public static let command = "~/.claude/hooks/notch.sh"
+
+    /// The events Claude Code fires and what each one means for a session.
+    /// Keys are the hook event names, values the array under that event in
+    /// `settings.json` (the `"hooks"` object).
+    public static let hooksBlock: [String: Any] = [
+        // Also fires on `compact`, which must not turn a working dot grey.
+        "SessionStart": [entry(matcher: "startup|resume|clear|fork", state: "idle")],
+        "UserPromptSubmit": [entry(matcher: nil, state: "working")],
+        // After a permission is approved no UserPromptSubmit fires; this is
+        // what turns the dot from red back to yellow.
+        "PostToolUse": [entry(matcher: "*", state: "working")],
+        "Notification": [
+            entry(matcher: "permission_prompt", state: "needs_you"),
+            entry(matcher: "elicitation_dialog", state: "needs_you"),
+            entry(matcher: "idle_prompt", state: "idle_done"),
+        ],
+        "Stop": [entry(matcher: nil, state: "done")],
+        // Synchronous so it finishes before a SessionStart for `/clear`
+        // rewrites the same session id.
+        "SessionEnd": [entry(matcher: "*", state: "gone", async: false, timeout: 2)],
+    ]
+
+    /// Event names in the block, in the order they appear in a session's life.
+    public static let events = ["SessionStart", "UserPromptSubmit", "PostToolUse",
+                                "Notification", "Stop", "SessionEnd"]
+
+    private static func entry(matcher: String?, state: String,
+                              async: Bool = true, timeout: Int = 5) -> [String: Any] {
+        var hook: [String: Any] = [
+            "type": "command",
+            "command": "\(command) \(state)",
+            "timeout": timeout,
+        ]
+        if async { hook["async"] = true }
+        var entry: [String: Any] = ["hooks": [hook]]
+        if let matcher { entry["matcher"] = matcher }
+        return entry
+    }
+
+    /// The script itself.
+    public static let source = #"""
 #!/bin/bash
 # notch.sh — one Claude Code hook, six states.
 #
@@ -159,3 +211,6 @@ else
     rm -f "$f.tmp"
 fi
 exit 0
+
+"""#
+}

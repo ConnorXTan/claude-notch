@@ -1,6 +1,6 @@
-# lightswitch — the notch as a status light for Claude Code.
+# claude-notch — the notch as a status light for Claude Code.
 #
-#   make app        build/Lightswitch.app, the release bundle
+#   make app        build/ClaudeNotch.app, the release bundle
 #   make run        build the app and open it
 #   make swift      debug build (swift build)
 #   make test       the unit tests (swift test)
@@ -26,14 +26,14 @@ help:
 # release binary as a bundle so Launch Services treats it as an app (menu bar
 # extra, LSUIElement, Automation permission for terminal focus).
 
-APP        := $(BUILD)/Lightswitch.app
-ICNS       := $(BUILD)/Lightswitch.icns
-SWIFT_REL  := .build/release/Lightswitch
-SWIFT_SRC  := Package.swift $(shell find Lightswitch -type f 2>/dev/null)
+APP        := $(BUILD)/ClaudeNotch.app
+ICNS       := $(BUILD)/ClaudeNotch.icns
+SWIFT_REL  := .build/release/ClaudeNotch
+SWIFT_SRC  := Package.swift $(shell find ClaudeNotch -type f 2>/dev/null)
 
 $(ICNS): tools/mkicon.swift | $(BUILD)
-	swift tools/mkicon.swift $(BUILD)/Lightswitch.iconset
-	iconutil -c icns $(BUILD)/Lightswitch.iconset -o $(ICNS)
+	swift tools/mkicon.swift $(BUILD)/ClaudeNotch.iconset
+	iconutil -c icns $(BUILD)/ClaudeNotch.iconset -o $(ICNS)
 
 icon: $(ICNS)
 
@@ -49,9 +49,9 @@ $(APP): $(SWIFT_SRC) $(ICNS)
 	swift build -c release
 	rm -rf $(APP)
 	mkdir -p $(APP)/Contents/MacOS $(APP)/Contents/Resources
-	cp $(SWIFT_REL) $(APP)/Contents/MacOS/Lightswitch
-	cp Lightswitch/Info.plist $(APP)/Contents/Info.plist
-	cp $(ICNS) $(APP)/Contents/Resources/Lightswitch.icns
+	cp $(SWIFT_REL) $(APP)/Contents/MacOS/ClaudeNotch
+	cp ClaudeNotch/Info.plist $(APP)/Contents/Info.plist
+	cp $(ICNS) $(APP)/Contents/Resources/ClaudeNotch.icns
 	codesign --force --sign - $(APP)
 	@echo "built $(APP)"
 
