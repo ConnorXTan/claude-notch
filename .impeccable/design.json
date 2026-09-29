@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "generatedAt": "2026-09-24T11:47:02Z",
-  "title": "Design System: Lightswitch",
+  "title": "Design System: Claude Notch",
   "extensions": {
     "colorMeta": {
       "notch-black": { "role": "neutral", "displayName": "Notch Black", "canonical": "#000000" },
@@ -37,7 +37,7 @@
       "mono": { "displayName": "Mono", "purpose": "Short session IDs when two sessions share a folder name." },
       "counter": { "displayName": "Counter", "purpose": "The +N overflow in the closed notch." },
       "settings-body": { "displayName": "Settings body", "purpose": "System body text style, untouched, in the grouped Form." },
-      "settings-callout": { "displayName": "Settings callout", "purpose": "Error lines under the sensor and hooks sections." }
+      "settings-callout": { "displayName": "Settings callout", "purpose": "Error lines under the hooks section." }
     },
     "shadows": [
       { "name": "panel-lift", "value": "0 8px 14px rgba(0,0,0,0.5)", "purpose": "The whole notch shape while open or hovered; opacity 0 at rest." },
@@ -55,7 +55,6 @@
       { "name": "breathe", "value": "easeInOut(duration: 2.2).repeatForever(autoreverses: true)", "purpose": "Done dot once Claude has been waiting a while: opacity 1 to 0.45." },
       { "name": "dot-settle", "value": "easeOut(duration: 0.2)", "purpose": "A dot returning to rest when the pulse or breathe stops." },
       { "name": "row-hover", "value": "easeOut(duration: 0.12)", "purpose": "Session row hover fill in and out." },
-      { "name": "ratio-bar", "value": "linear(duration: 0.1)", "purpose": "The Settings ratio bar tracking the live sensor reading." },
       { "name": "hover-open-delay", "value": "300ms", "purpose": "Pointer must rest this long before the notch opens." },
       { "name": "hover-close-delay", "value": "100ms", "purpose": "Pointer-out debounce before the notch closes." },
       { "name": "reduce-motion", "value": "accessibilityReduceMotion", "purpose": "Pulse and breathe are disabled; an unacknowledged red dot gets a 1.5 pt white 90% ring at dot + 6 pt." }
@@ -112,25 +111,17 @@
       "css": ".ds-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 400px; max-width: 100%; min-height: 64px; padding: 6px 10px 10px; box-sizing: border-box; text-align: center; background: #000; border-radius: 0 0 24px 24px; } .ds-empty-title { font: 600 13px system-ui, sans-serif; color: rgba(255,255,255,0.85); } .ds-empty-body { font: 400 12px system-ui, sans-serif; color: rgba(255,255,255,0.45); } .ds-btn-install { margin-top: 4px; padding: 5px 12px; border: none; border-radius: 9999px; background: rgba(255,255,255,0.14); color: #fff; font: 600 12px system-ui, sans-serif; cursor: default; } .ds-btn-install:hover { background: rgba(255,255,255,0.14); } .ds-btn-install:focus-visible { outline: 2px solid rgba(255,255,255,0.9); outline-offset: 2px; }"
     },
     {
-      "name": "Ratio Bar",
-      "kind": "custom",
-      "refersTo": "ratio-bar",
-      "description": "The Settings window's live sensor readout: the fill is the reading as a fraction of baseline, the two ticks are the cover and uncover thresholds. Accent fill while armed; orange once covered.",
-      "html": "<div class=\"ds-ratio\" role=\"img\" aria-label=\"Light level 72 percent of baseline\"><div class=\"ds-ratio-fill\" style=\"width:72%\"></div><div class=\"ds-ratio-tick\" style=\"left:45%\"></div><div class=\"ds-ratio-tick\" style=\"left:70%\"></div></div>",
-      "css": ".ds-ratio { position: relative; width: 180px; height: 6px; border-radius: 9999px; background: rgba(128,128,128,0.18); } .ds-ratio-fill { height: 100%; border-radius: 9999px; background: #0a84ff; transition: width 0.1s linear; } .ds-ratio-fill.ds-covered { background: #ff9f0a; } .ds-ratio-tick { position: absolute; top: -2px; width: 1px; height: 10px; background: rgba(128,128,128,0.6); }"
-    },
-    {
       "name": "Status Icon",
       "kind": "custom",
       "refersTo": "session-dot",
       "description": "The 18 pt menu bar template image: a 2 × 2 grid of 3 pt dots with 1.5 pt gaps, following the menu bar's appearance.",
-      "html": "<svg class=\"ds-status-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 18 18\" aria-label=\"Lightswitch\"><circle cx=\"6.75\" cy=\"6.75\" r=\"1.5\"/><circle cx=\"11.25\" cy=\"6.75\" r=\"1.5\"/><circle cx=\"6.75\" cy=\"11.25\" r=\"1.5\"/><circle cx=\"11.25\" cy=\"11.25\" r=\"1.5\"/></svg>",
+      "html": "<svg class=\"ds-status-icon\" width=\"18\" height=\"18\" viewBox=\"0 0 18 18\" aria-label=\"Claude Notch\"><circle cx=\"6.75\" cy=\"6.75\" r=\"1.5\"/><circle cx=\"11.25\" cy=\"6.75\" r=\"1.5\"/><circle cx=\"6.75\" cy=\"11.25\" r=\"1.5\"/><circle cx=\"11.25\" cy=\"11.25\" r=\"1.5\"/></svg>",
       "css": ".ds-status-icon { fill: currentColor; display: inline-block; vertical-align: middle; }"
     }
   ],
   "narrative": {
     "northStar": "The Status Light",
-    "overview": "Lightswitch draws nothing of its own except a black shape that extends the MacBook's notch and the coloured dots inside it. The world is the platform's: the system font at 10 to 13 pt, the system's semantic status colours, standard grouped Settings controls, a text-only menu bar menu. Personality lives in the dots and in motion that only ever means a change of state.\n\nDensity is high and fixed. The closed notch is a row of 8 pt dots at 10 pt spacing; the open panel is a 400 pt list of 32 pt rows. Nothing decorative is drawn behind the physical notch, which has no pixels: layouts leave a clear gap exactly the notch's measured width.",
+    "overview": "Claude Notch draws nothing of its own except a black shape that extends the MacBook's notch and the coloured dots inside it. The world is the platform's: the system font at 10 to 13 pt, the system's semantic status colours, standard grouped Settings controls, a text-only menu bar menu. Personality lives in the dots and in motion that only ever means a change of state.\n\nDensity is high and fixed. The closed notch is a row of 8 pt dots at 10 pt spacing; the open panel is a 400 pt list of 32 pt rows. Nothing decorative is drawn behind the physical notch, which has no pixels: layouts leave a clear gap exactly the notch's measured width.",
     "keyCharacteristics": [
       "Pure black shape, white text at opacity steps, three system state colours.",
       "One typeface (system), sizes 10 to 13 pt, monospaced digits wherever numbers tick.",
@@ -151,7 +142,7 @@
       "Do animate only state changes: springs for open/close, smooth 0.3 for the peek, the pulse for unacknowledged red, the breathe for done-and-waiting, easeOut 0.12 for row hover.",
       "Do honour Reduce Motion: no pulse, no breathe, the white ring instead.",
       "Do keep the four dot slots fixed and overflow into \"+N\".",
-      "Do use standard grouped Form controls in Settings; draw custom only the ratio bar and the 8 pt status dot."
+      "Do use standard grouped Form controls in Settings; draw custom only the 8 pt status dot."
     ],
     "donts": [
       "Don't draw behind the physical notch; leave the measured gap clear in the closed, peek and open layouts.",
