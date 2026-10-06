@@ -57,7 +57,8 @@ public enum HookScript {
 #
 # Claude Code runs this with the hook's JSON payload on stdin. It writes one
 # small file per session to ~/.claude-notch/sessions/<session_id>.json (state,
-# where it runs, and the session's name read from its transcript), which
+# where it runs, its cmux workspace and tab when it runs in cmux, and the
+# session's name read from its transcript), which
 # the Claude Notch app watches; `gone` deletes it. Nothing is ever printed to
 # stdout (Claude Code parses hook stdout as JSON) and the exit status is
 # always 0, so a broken script can never block a session.
@@ -128,6 +129,15 @@ mkdir -p "$dir" 2>/dev/null || exit 0
 cwd=$(field cwd)
 [ -z "$cwd" ] && cwd="${CLAUDE_PROJECT_DIR:-$PWD}"
 
+# cmux puts the workspace (a sidebar tab) and the surface (one terminal in
+# it) a shell belongs to in the environment, as UUIDs. The app groups by the
+# first and focuses the second. Teammates Claude starts in its own tmux
+# inherit their leader's, which is where they show up.
+cmux_ws="${CMUX_WORKSPACE_ID:-}"
+cmux_surface="${CMUX_SURFACE_ID:-}"
+case "$cmux_ws" in *[!A-Za-z0-9-]*) cmux_ws="" ;; esac
+case "$cmux_surface" in *[!A-Za-z0-9-]*) cmux_surface="" ;; esac
+
 idle=false
 if [ "$state" = "idle_done" ]; then
     state=done
@@ -156,11 +166,14 @@ fi
 # Skip the write when nothing changed. idle_done always writes (it refreshes
 # the timestamp the app pulses on); a plain done after it clears the flag.
 # A new name is a change: the title arrives a moment after the first prompt.
+# So is a new terminal, which also fills it in for files older than cmux.
 if [ "$idle" = false ] && [ -f "$f" ]; then
     cur_state=$(filefield state "$f")
     cur_idle=$(filefield idle "$f")
     cur_title=$(filefield title "$f")
-    [ "$cur_state" = "$state" ] && [ "$cur_idle" = "false" ] && [ "$cur_title" = "$title" ] && exit 0
+    cur_surface=$(filefield cmux_surface "$f")
+    [ "$cur_state" = "$state" ] && [ "$cur_idle" = "false" ] && [ "$cur_title" = "$title" ] \
+        && [ "$cur_surface" = "$cmux_surface" ] && exit 0
 fi
 
 # --- which process is the session --------------------------------------------
@@ -196,12 +209,14 @@ if [ -n "$jq_bin" ]; then
     "$jq_bin" -n --arg sid "$sid" --arg state "$state" --arg cwd "$cwd" \
         --argjson pid "$pid" --arg tty "$tty" --arg term "$term" \
         --argjson idle "$idle" --argjson ts "$ts" --arg title "$title" \
-        '{session_id:$sid,state:$state,cwd:$cwd,pid:$pid,tty:$tty,term_program:$term,idle:$idle,updated_at:$ts,title:$title}' \
+        --arg cws "$cmux_ws" --arg csf "$cmux_surface" \
+        '{session_id:$sid,state:$state,cwd:$cwd,pid:$pid,tty:$tty,term_program:$term,idle:$idle,updated_at:$ts,title:$title,cmux_workspace:$cws,cmux_surface:$csf}' \
         > "$f.tmp" 2>/dev/null
 else
     esc() { printf '%s' "$1" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'; }
-    printf '{"session_id":"%s","state":"%s","cwd":"%s","pid":%s,"tty":"%s","term_program":"%s","idle":%s,"updated_at":%s,"title":"%s"}\n' \
+    printf '{"session_id":"%s","state":"%s","cwd":"%s","pid":%s,"tty":"%s","term_program":"%s","idle":%s,"updated_at":%s,"title":"%s","cmux_workspace":"%s","cmux_surface":"%s"}\n' \
         "$(esc "$sid")" "$state" "$(esc "$cwd")" "$pid" "$(esc "$tty")" "$(esc "$term")" "$idle" "$ts" "$(esc "$title")" \
+        "$cmux_ws" "$cmux_surface" \
         > "$f.tmp" 2>/dev/null
 fi
 

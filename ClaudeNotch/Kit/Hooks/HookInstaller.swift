@@ -83,6 +83,19 @@ public struct HookInstaller {
         try backupAndWrite(Self.merge(settings))
     }
 
+    /// Rewrites an installed script that differs from this build's, so a new
+    /// version of the app brings its hook along. Does nothing when the script
+    /// is not installed. True when it wrote.
+    @discardableResult
+    public func updateScript() throws -> Bool {
+        guard FileManager.default.fileExists(atPath: scriptURL.path) else { return false }
+        if let current = try? String(contentsOf: scriptURL, encoding: .utf8), current == HookScript.source {
+            return false
+        }
+        try writeScript()
+        return true
+    }
+
     public func uninstall() throws {
         let fm = FileManager.default
         if fm.fileExists(atPath: settingsURL.path) {

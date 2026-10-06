@@ -18,6 +18,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         store.start()
         coordinator.bind(to: store)
+        HooksModel.shared.updateScript()
         HooksModel.shared.refresh()
         coordinator.selectSession = { session in
             let result = TerminalFocuser.focus(termProgram: session.termProgram,

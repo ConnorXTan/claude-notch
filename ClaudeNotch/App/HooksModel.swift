@@ -20,6 +20,18 @@ final class HooksModel: ObservableObject {
         status = installer.status()
     }
 
+    /// Brings an installed hook script up to this build's, so new fields
+    /// reach the session files without a reinstall.
+    func updateScript() {
+        do {
+            if try installer.updateScript() {
+                Log.note(Log.sessions, "updated \(installer.scriptURL.path)")
+            }
+        } catch {
+            lastError = error.localizedDescription
+        }
+    }
+
     func install() {
         do {
             try installer.install()
