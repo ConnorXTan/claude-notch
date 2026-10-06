@@ -99,6 +99,19 @@ final class CmuxTests: XCTestCase {
         XCTAssertEqual(groups[1].lead?.id, "bio")
     }
 
+    func testAWorkspaceIsMeasuredFromWhereMostOfItsSessionsWork() {
+        let sessions = [
+            session("mate", cwd: "/private/tmp/scratch/wt-db", workspace: leaderboard),
+            session("lead", workspace: leaderboard),
+            session("mate2", workspace: leaderboard),
+        ]
+        let group = ProjectGroup.grouping(sessions, root: { $0 })[0]
+        XCTAssertEqual(group.root, downloads)
+        XCTAssertEqual(group.sessions.map(group.subpath(of:)), ["wt-db", "", ""])
+        XCTAssertEqual(ProjectGroup.commonest(["a", "b"]), "a", "a tie goes to the first")
+        XCTAssertEqual(ProjectGroup.commonest([]), "")
+    }
+
     func testWithoutCmuxsAnswerAWorkspaceBorrowsItsSessionsName() {
         let sessions = [
             session("a", title: "", workspace: leaderboard, surface: "FD79"),

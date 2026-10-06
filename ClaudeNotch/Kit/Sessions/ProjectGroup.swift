@@ -98,8 +98,16 @@ public struct ProjectGroup: Identifiable, Equatable {
                 return ProjectGroup(root: key, sessions: members)
             }
             return ProjectGroup(cmuxWorkspace: workspace, name: cmux.workspaceNames[workspace],
-                                root: root(members[0].cwd), sessions: members)
+                                root: commonest(members.map { root($0.cwd) }), sessions: members)
         }
+    }
+
+    /// The root most of a workspace's sessions share, the first one on a
+    /// tie, so a teammate off in a scratch worktree does not move it.
+    static func commonest(_ roots: [String]) -> String {
+        var counts: [String: Int] = [:]
+        for r in roots { counts[r, default: 0] += 1 }
+        return roots.max { counts[$0]! < counts[$1]! } ?? ""
     }
 }
 
