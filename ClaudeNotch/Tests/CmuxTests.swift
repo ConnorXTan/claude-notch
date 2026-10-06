@@ -5,7 +5,7 @@ import XCTest
 final class CmuxTests: XCTestCase {
     private let leaderboard = "0D17AD56-CACC-49B0-BB94-B57BF40C26F1"
     private let portfolio = "A716FE6C-B853-4FB4-936F-8A199622F122"
-    private let downloads = "/Users/connortan/Downloads"
+    private let downloads = NSHomeDirectory() + "/Downloads"
 
     private func session(_ id: String, _ state: SessionState = .idle, cwd: String? = nil,
                          title: String = "", workspace: String = "", surface: String = "",
