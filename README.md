@@ -45,18 +45,27 @@ session in a linked worktree (Claude Code's `.claude/worktrees/<name>`, or one
 kept elsewhere) lists under the repository it belongs to. Two projects with
 the same folder name show where they live.
 
+In [cmux](https://cmux.com) the list follows its sidebar instead: one header
+per cmux workspace, named as cmux names it, with every Claude session in that
+workspace under it, including the teammates an agent team starts in its own
+tmux. Clicking a header goes to the session in it that needs you most.
+
 When a session turns red the notch widens for three seconds to say which
 folder and plays a sound (Settings turns it off). The dot keeps pulsing until
 you click it or the state changes.
 
 **Terminals.** Clicking a session brings its terminal forward: the exact tab
 in iTerm and Terminal (via AppleScript, which asks for Automation permission
-once), the window whose terminal runs the session in VS Code and Cursor (found from the terminal shell's directory and the editor's own list of open windows, so a session that moved into a worktree still lands in its window), the app for Ghostty, kitty,
+once), the exact workspace and terminal in cmux (by the `CMUX_WORKSPACE_ID`
+and `CMUX_SURFACE_ID` its shells carry, through cmux's AppleScript, since its
+socket only answers processes cmux started), the window whose terminal runs the session in VS Code and Cursor (found from the terminal shell's directory and the editor's own list of open windows, so a session that moved into a worktree still lands in its window), the app for Ghostty, kitty,
 WezTerm, Warp and the rest.
 
 The app is a menu-bar accessory for macOS 14 or newer, shown on every display
 or just the built-in one. It is not sandboxed: bringing a terminal forward
-reads other processes' working directories and VS Code's own window list.
+reads other processes' working directories and VS Code's own window list,
+and a session written before the hook knew about cmux is placed by reading
+the cmux ids from its process's environment.
 
 ## Developing
 

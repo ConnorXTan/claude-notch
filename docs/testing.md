@@ -24,6 +24,7 @@ to the notch layout, the hook script, or a Claude Code update.
 | 4 | A session turns red while the notch is closed | Peek beside the notch for 3 s, sound once, dot pulses until acknowledged | 2026-09-24 | snapshot (sound path is `NSSound(named: "Glass")`, exercised with sound off) |
 | 4 | `idle_prompt` (`done` with `idle: true`) | Green dot breathes slowly, no sound | 2026-09-24 | snapshot |
 | 6 | Click a red dot / row with VS Code, iTerm, Terminal sessions | The right tab comes forward (iTerm, Terminal); the window whose terminal runs the session comes forward (VS Code), even for a session that moved into a worktree, and no new window opens | pending | manual (needs the Automation permission prompt for iTerm/Terminal); the folder choice is unit-tested (`TerminalWindowTests`: the terminal shell's directory and VS Code's own list of open windows, from its `storage.json`) |
+| 6b | Click a row or header for sessions in cmux, including agent-team teammates | cmux selects the workspace and focuses the session's terminal; teammates go to their leader's terminal; the list groups by cmux workspace with cmux's names | pending | manual (needs the Automation permission prompt for cmux); the script was run by hand against cmux 0.65.0 and switched workspace and terminal; grouping, names, and the process-environment fallback are unit-tested (`CmuxTests`) |
 | 6 | Menu bar: Launch at Login | Registered as a login item from the bundled app | pending | manual |
 
 ## Manual soak

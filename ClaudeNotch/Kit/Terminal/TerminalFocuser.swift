@@ -15,6 +15,7 @@ public enum TerminalKind: Equatable, CaseIterable {
     case warp
     case hyper
     case alacritty
+    case cmux
     case unknown
 
     public init(termProgram: String) {
@@ -28,6 +29,7 @@ public enum TerminalKind: Equatable, CaseIterable {
         case "warpterminal", "warp": self = .warp
         case "hyper": self = .hyper
         case "alacritty": self = .alacritty
+        case "cmux": self = .cmux
         default: self = .unknown
         }
     }
@@ -43,6 +45,7 @@ public enum TerminalKind: Equatable, CaseIterable {
         case .warp: return "Warp"
         case .hyper: return "Hyper"
         case .alacritty: return "Alacritty"
+        case .cmux: return "cmux"
         case .unknown: return "Terminal"
         }
     }
@@ -65,6 +68,7 @@ public enum TerminalKind: Equatable, CaseIterable {
         case .warp: return ["dev.warp.Warp-Stable"]
         case .hyper: return ["co.zeit.hyper"]
         case .alacritty: return ["org.alacritty"]
+        case .cmux: return [Cmux.bundleIdentifier]
         case .unknown: return []
         }
     }
@@ -72,8 +76,8 @@ public enum TerminalKind: Equatable, CaseIterable {
 
 /// Brings the terminal that owns a Claude Code session to the front.
 ///
-/// iTerm and Terminal can select the exact tab by tty through AppleScript.
-/// VS Code cannot be scripted that way, but asking it to open a folder one
+/// iTerm and Terminal can select the exact tab by tty through AppleScript,
+/// and cmux by the surface id its shells carry (`Cmux`). VS Code cannot be scripted that way, but asking it to open a folder one
 /// of its windows already has brings that window forward; `TerminalWindow`
 /// works out which folder that is (the session may have moved into a
 /// worktree while its terminal stayed in the repository's window).
@@ -147,10 +151,23 @@ public enum TerminalFocuser {
         }
     }
 
+    /// Focuses the terminal a session runs in.
+    @MainActor
+    public static func focus(_ session: Session) -> Result {
+        focus(termProgram: session.termProgram, tty: session.tty, cwd: session.cwd,
+              pid: pid_t(session.pid),
+              cmuxSurface: session.cmuxSurface, cmuxWorkspace: session.cmuxWorkspace)
+    }
+
     /// Focuses the terminal for a session. Never throws; the result says how
     /// far it got.
     @MainActor
-    public static func focus(termProgram: String, tty: String, cwd: String, pid: pid_t = 0) -> Result {
+    public static func focus(termProgram: String, tty: String, cwd: String, pid: pid_t = 0,
+                             cmuxSurface: String = "", cmuxWorkspace: String = "") -> Result {
+        if !cmuxSurface.isEmpty || !cmuxWorkspace.isEmpty {
+            return focusCmux(surface: cmuxSurface, workspace: cmuxWorkspace)
+        }
+
         let kind = TerminalKind(termProgram: termProgram)
         var scriptError: String?
 
@@ -184,6 +201,25 @@ public enum TerminalFocuser {
 
         app.activate()
         return .activatedApp
+    }
+
+    /// cmux shells report Ghostty (or tmux, inside it), so cmux is told
+    /// apart by the ids it handed the session rather than by `$TERM_PROGRAM`.
+    @MainActor
+    private static func focusCmux(surface: String, workspace: String) -> Result {
+        guard let app = NSRunningApplication.runningApplications(withBundleIdentifier: Cmux.bundleIdentifier).first else {
+            return .notRunning
+        }
+        switch runAppleScript(Cmux.focusScript(surface: surface, workspace: workspace)) {
+        case .success(true):
+            return .focusedTab
+        case .success(false):
+            app.activate()
+            return .activatedApp
+        case .failure(let message):
+            app.activate()
+            return .scriptFailed(message)
+        }
     }
 
     // MARK: - Helpers

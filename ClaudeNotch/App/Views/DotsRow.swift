@@ -45,6 +45,7 @@ struct SessionDot: View {
     let acknowledged: Bool
     var size: CGFloat = 8
 
+    @EnvironmentObject private var store: SessionStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase = false
 
@@ -79,7 +80,7 @@ struct SessionDot: View {
                                 .frame(width: size + 6, height: size + 6)
                         }
                     }
-                    .accessibilityLabel("\(session.projectName) \(session.state.announcement)")
+                    .accessibilityLabel("\(store.projectName(of: session)) \(session.state.announcement)")
             }
         }
         .frame(width: size, height: size)

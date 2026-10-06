@@ -14,10 +14,17 @@ public struct Session: Identifiable, Codable, Equatable, Hashable {
     /// The session's name as Claude Code shows it: a `/rename`, else the
     /// title it generated from the conversation. Empty until it has one.
     public var title: String
+    /// The cmux workspace (sidebar tab) the session's terminal belongs to,
+    /// as the UUID cmux put in its environment. Empty outside cmux.
+    public var cmuxWorkspace: String
+    /// The cmux surface (the terminal itself) the session runs in. Empty
+    /// outside cmux.
+    public var cmuxSurface: String
 
     public init(id: String, state: SessionState, cwd: String, pid: Int32 = 0,
                 tty: String = "", termProgram: String = "", idle: Bool = false,
-                updatedAt: Date = Date(), title: String = "") {
+                updatedAt: Date = Date(), title: String = "",
+                cmuxWorkspace: String = "", cmuxSurface: String = "") {
         self.id = id
         self.state = state
         self.cwd = cwd
@@ -27,6 +34,8 @@ public struct Session: Identifiable, Codable, Equatable, Hashable {
         self.idle = idle
         self.updatedAt = updatedAt
         self.title = title
+        self.cmuxWorkspace = cmuxWorkspace
+        self.cmuxSurface = cmuxSurface
     }
 
     enum CodingKeys: String, CodingKey {
@@ -36,6 +45,8 @@ public struct Session: Identifiable, Codable, Equatable, Hashable {
         case idle
         case updatedAt = "updated_at"
         case title
+        case cmuxWorkspace = "cmux_workspace"
+        case cmuxSurface = "cmux_surface"
     }
 
     public init(from decoder: Decoder) throws {
@@ -53,6 +64,8 @@ public struct Session: Identifiable, Codable, Equatable, Hashable {
         let seconds = try c.decodeIfPresent(Double.self, forKey: .updatedAt) ?? 0
         updatedAt = Date(timeIntervalSince1970: seconds)
         title = try c.decodeIfPresent(String.self, forKey: .title) ?? ""
+        cmuxWorkspace = try c.decodeIfPresent(String.self, forKey: .cmuxWorkspace) ?? ""
+        cmuxSurface = try c.decodeIfPresent(String.self, forKey: .cmuxSurface) ?? ""
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -66,6 +79,19 @@ public struct Session: Identifiable, Codable, Equatable, Hashable {
         try c.encode(idle, forKey: .idle)
         try c.encode(Int(updatedAt.timeIntervalSince1970), forKey: .updatedAt)
         try c.encode(title, forKey: .title)
+        try c.encode(cmuxWorkspace, forKey: .cmuxWorkspace)
+        try c.encode(cmuxSurface, forKey: .cmuxSurface)
+    }
+
+    /// Whether the session's terminal is a cmux one.
+    public var inCmux: Bool {
+        !cmuxSurface.isEmpty || !cmuxWorkspace.isEmpty
+    }
+
+    /// The terminal app: cmux when cmux said so (its shells report Ghostty,
+    /// and tmux inside it reports tmux), else whatever `$TERM_PROGRAM` was.
+    public var terminalKind: TerminalKind {
+        inCmux ? .cmux : TerminalKind(termProgram: termProgram)
     }
 
     /// The last path component of the working directory: what the list shows.

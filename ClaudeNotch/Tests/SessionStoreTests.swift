@@ -11,6 +11,7 @@ final class SessionStoreTests: XCTestCase {
             .appendingPathComponent("SessionStoreTests-\(UUID().uuidString)", isDirectory: true)
         try FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
         store = SessionStore(directory: dir)
+        store.processEnvironment = { _ in nil }
     }
 
     override func tearDown() async throws {

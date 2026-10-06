@@ -57,7 +57,7 @@ final class NotchCoordinator: ObservableObject {
             NSSound(named: "Glass")?.play()
         }
         guard !anyOpen else { return }
-        showPeek(Peek(title: alert.session.projectName,
+        showPeek(Peek(title: SessionStore.shared.projectName(of: alert.session),
                       detail: alert.session.state.label,
                       tint: alert.session.state.color),
                  for: .seconds(3))

@@ -23,9 +23,12 @@ struct SessionListView: View {
                 let list = VStack(alignment: .leading, spacing: 6) {
                     ForEach(groups) { group in
                         VStack(alignment: .leading, spacing: 1) {
-                            ProjectHeader(group: group, showLocation: duplicates.contains(group.name))
+                            ProjectHeader(group: group, showLocation: duplicates.contains(group.name)) {
+                                if let lead = group.lead { onSelect(lead) }
+                            }
                             ForEach(group.sessions) { session in
                                 SessionRow(session: session,
+                                           name: group.label(of: session),
                                            subpath: group.subpath(of: session),
                                            acknowledged: store.isAcknowledged(session.id),
                                            now: context.date) {
@@ -55,11 +58,15 @@ struct SessionListView: View {
     }
 }
 
-/// The project line: folder name, and where it lives when two projects
-/// share a name.
+/// The project line: folder or cmux workspace name, and where it lives when
+/// two projects share a name. Clicking it goes to the terminal that needs
+/// you most.
 struct ProjectHeader: View {
     let group: ProjectGroup
     let showLocation: Bool
+    var onSelect: () -> Void = {}
+
+    @State private var hovering = false
 
     var body: some View {
         HStack(alignment: .firstTextBaseline, spacing: 8) {
@@ -83,7 +90,16 @@ struct ProjectHeader: View {
         }
         .padding(.horizontal, 10)
         .frame(height: 26)
+        .background(
+            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                .fill(.white.opacity(hovering ? 0.09 : 0))
+        )
+        .contentShape(Rectangle())
+        .onHover { hovering = $0 }
+        .onTapGesture(perform: onSelect)
+        .animation(.easeOut(duration: 0.12), value: hovering)
         .accessibilityElement(children: .combine)
+        .accessibilityAddTraits(.isButton)
     }
 }
 
@@ -94,6 +110,7 @@ struct SessionRow: View {
     static let height: CGFloat = 28
 
     let session: Session
+    var name: String? = nil
     var subpath: String = ""
     let acknowledged: Bool
     let now: Date
@@ -104,11 +121,11 @@ struct SessionRow: View {
     var body: some View {
         HStack(spacing: 10) {
             SessionDot(session: session, acknowledged: acknowledged)
-            Text(session.displayName)
+            Text(name ?? session.displayName)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(.white.opacity(0.85))
                 .lineLimit(1)
-                .truncationMode(session.title.isEmpty ? .middle : .tail)
+                .truncationMode((name ?? session.displayName) == session.title ? .tail : .middle)
                 .layoutPriority(1)
                 .help(session.terminalLabel)
             if !subpath.isEmpty {

@@ -18,12 +18,11 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
         store.start()
         coordinator.bind(to: store)
+        HooksModel.shared.updateScript()
         HooksModel.shared.refresh()
         coordinator.selectSession = { session in
-            let result = TerminalFocuser.focus(termProgram: session.termProgram,
-                                               tty: session.tty, cwd: session.cwd,
-                                               pid: pid_t(session.pid))
-            Log.note(Log.sessions, "focus \(session.folderName) (\(session.termProgram)) → \(result)")
+            let result = TerminalFocuser.focus(session)
+            Log.note(Log.sessions, "focus \(session.folderName) (\(session.terminalKind.displayName)) → \(result)")
         }
 
         observers.append(NotificationCenter.default.addObserver(

@@ -33,6 +33,11 @@ public final class SessionStore: ObservableObject {
     /// Maps a session's working directory to the repository it lists
     /// under; tests swap in the identity.
     public var projectRoot: (String) -> String = ProjectRoot.resolve
+    /// Asks cmux what it has open; tests swap in a fixed answer.
+    public var cmuxLayoutReader: () async -> Cmux.Layout? = Cmux.readLayout
+    /// Reads a session process's environment, for files written before the
+    /// hook recorded the cmux terminal; tests swap it out.
+    public var processEnvironment: (pid_t) -> [String: String]? = ProcessEnvironment.variables(of:)
 
     /// Every known session, slotted ones first in slot order, then overflow in
     /// order of first appearance.
@@ -43,6 +48,8 @@ public final class SessionStore: ObservableObject {
     @Published public private(set) var acknowledged: Set<String> = []
     /// Set when the folder could not be read, for Settings to show.
     @Published public private(set) var lastError: String?
+    /// cmux's workspace names and where its terminals are, as last read.
+    @Published public private(set) var cmuxLayout: Cmux.Layout = .empty
 
     private var slots: [String: Int] = [:]
     private var firstSeen: [String: Date] = [:]
@@ -50,6 +57,9 @@ public final class SessionStore: ObservableObject {
     private var source: DispatchSourceFileSystemObject?
     private var descriptor: Int32 = -1
     private var pruneTimer: Timer?
+    private var cmuxReading = false
+    private var cmuxStale = false
+    private var cmuxOfProcess: [Int32: (workspace: String, surface: String)] = [:]
 
     public init(directory: URL) {
         self.directory = directory
@@ -127,8 +137,11 @@ public final class SessionStore: ObservableObject {
     /// transitions. Public so tests and previews can drive the store without
     /// touching the filesystem.
     public func apply(_ found: [Session]) {
+        let found = found.map(withCmuxTerminal)
         let previous = Dictionary(uniqueKeysWithValues: sessions.map { ($0.id, $0) })
         let ids = Set(found.map(\.id))
+        let pids = Set(found.map(\.pid))
+        for pid in cmuxOfProcess.keys where !pids.contains(pid) { cmuxOfProcess[pid] = nil }
 
         for id in slots.keys where !ids.contains(id) { slots[id] = nil }
         for id in firstSeen.keys where !ids.contains(id) { firstSeen[id] = nil }
@@ -170,6 +183,58 @@ public final class SessionStore: ObservableObject {
             case (.none, .none): return firstSeen[a.id]! < firstSeen[b.id]!
             }
         }
+
+        if sessions.contains(where: { $0.inCmux && previous[$0.id] != $0 }) {
+            refreshCmux()
+        }
+    }
+
+    /// A session whose file predates the hook recording cmux ids, with
+    /// them filled in from its process's environment (read once per
+    /// process). Sessions started since are written with them.
+    private func withCmuxTerminal(_ session: Session) -> Session {
+        guard !session.inCmux, session.pid > 0 else { return session }
+        let ids: (workspace: String, surface: String)
+        if let known = cmuxOfProcess[session.pid] {
+            ids = known
+        } else {
+            let environment = processEnvironment(pid_t(session.pid)) ?? [:]
+            ids = (Self.cmuxID(environment["CMUX_WORKSPACE_ID"]), Self.cmuxID(environment["CMUX_SURFACE_ID"]))
+            cmuxOfProcess[session.pid] = ids
+        }
+        var session = session
+        session.cmuxWorkspace = ids.workspace
+        session.cmuxSurface = ids.surface
+        return session
+    }
+
+    /// A cmux id as the hook accepts it: letters, digits and dashes only.
+    static func cmuxID(_ value: String?) -> String {
+        guard let value, !value.isEmpty,
+              value.unicodeScalars.allSatisfy({ CharacterSet.alphanumerics.contains($0) && $0.isASCII || $0 == "-" })
+        else { return "" }
+        return value
+    }
+
+    /// Re-reads cmux's workspaces in the background when a session runs in
+    /// it: on a session change (cmux renames a workspace when the session
+    /// in it gets a title) and whenever the list is about to be shown. A
+    /// request while a read is under way runs once it finishes.
+    public func refreshCmux() {
+        guard sessions.contains(where: \.inCmux) else { return }
+        guard !cmuxReading else {
+            cmuxStale = true
+            return
+        }
+        cmuxReading = true
+        cmuxStale = false
+        Task { [weak self, reader = cmuxLayoutReader] in
+            let layout = await reader()
+            guard let self else { return }
+            self.cmuxReading = false
+            if let layout, layout != self.cmuxLayout { self.cmuxLayout = layout }
+            if self.cmuxStale { self.refreshCmux() }
+        }
     }
 
     // MARK: Derived
@@ -183,10 +248,17 @@ public final class SessionStore: ObservableObject {
         return out
     }
 
-    /// The open notch's view: one group per repository, each holding its
-    /// terminals in slot order.
+    /// The open notch's view: one group per repository or cmux workspace,
+    /// each holding its terminals in slot order.
     public var groups: [ProjectGroup] {
-        ProjectGroup.grouping(sessions, root: projectRoot)
+        ProjectGroup.grouping(sessions, root: projectRoot, cmux: cmuxLayout)
+    }
+
+    /// The name of the project a session lists under: what the peek
+    /// announces and the dots are read out as.
+    public func projectName(of session: Session) -> String {
+        groups.first { group in group.sessions.contains { $0.id == session.id } }?.name
+            ?? session.projectName
     }
 
     /// Sessions beyond the four slots, in order of first appearance.

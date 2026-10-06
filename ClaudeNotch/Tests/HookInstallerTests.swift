@@ -170,6 +170,22 @@ final class HookInstallerTests: XCTestCase {
         XCTAssertEqual(Set(((settings["hooks"] as? [String: Any]) ?? [:]).keys), ["Stop"])
     }
 
+    func testUpdateScriptReplacesAnOldScriptButNeverInstallsOne() throws {
+        XCTAssertFalse(try installer.updateScript(), "not installed: nothing to update")
+        XCTAssertFalse(FileManager.default.fileExists(atPath: installer.scriptURL.path))
+
+        try installer.install()
+        XCTAssertFalse(try installer.updateScript(), "already current")
+
+        try Data("#!/bin/bash\nexit 0\n".utf8).write(to: installer.scriptURL)
+        let settingsBefore = try String(contentsOf: installer.settingsURL, encoding: .utf8)
+        XCTAssertTrue(try installer.updateScript())
+        XCTAssertEqual(try String(contentsOf: installer.scriptURL, encoding: .utf8), HookScript.source)
+        XCTAssertTrue(FileManager.default.isExecutableFile(atPath: installer.scriptURL.path))
+        XCTAssertEqual(try String(contentsOf: installer.settingsURL, encoding: .utf8), settingsBefore,
+                       "only the script is touched")
+    }
+
     func testInstallWithoutASettingsFileCreatesOne() throws {
         XCTAssertEqual(installer.status(), .notInstalled)
         try installer.install()
@@ -316,6 +332,50 @@ final class HookInstallerTests: XCTestCase {
         let missing = #"{"session_id":"t2","cwd":"/tmp/proj","transcript_path":"/nonexistent/t2.jsonl"}"#
         try runScript("working", payload: missing, home: home, noJQ: noJQ)
         XCTAssertEqual(try readSession("t2", home: home)["title"] as? String, "", "an unreadable transcript is not an error")
+    }
+
+    func testScriptRecordsTheCmuxTerminalWithJq() throws {
+        try XCTSkipIf(HookInstaller.jqPath() == nil, "jq is not installed on this machine")
+        try cmuxTerminal(noJQ: false)
+    }
+
+    func testScriptRecordsTheCmuxTerminalWithoutJq() throws {
+        try cmuxTerminal(noJQ: true)
+    }
+
+    /// cmux's workspace and surface ids come from the environment. A file
+    /// written before the hook knew about cmux gets them at the next event
+    /// even when nothing else changed, and anything that is not a UUID is
+    /// dropped rather than written.
+    private func cmuxTerminal(noJQ: Bool) throws {
+        let home = self.home.appendingPathComponent(noJQ ? "cmux-plutil" : "cmux-jq", isDirectory: true)
+        try FileManager.default.createDirectory(at: home, withIntermediateDirectories: true)
+        let payload = #"{"session_id":"cm1","cwd":"/tmp/proj"}"#
+        let cmux = ["CMUX_WORKSPACE_ID": "0D17AD56-CACC-49B0-BB94-B57BF40C26F1",
+                    "CMUX_SURFACE_ID": "FD79F840-8E6A-41B3-8DC1-0010D7F2FF23"]
+
+        try runScript("idle", payload: payload, home: home, noJQ: noJQ)
+        var session = try readSession("cm1", home: home)
+        XCTAssertEqual(session["cmux_workspace"] as? String, "", "outside cmux the keys are there, empty")
+        XCTAssertEqual(session["cmux_surface"] as? String, "")
+
+        try runScript("idle", payload: payload, home: home, noJQ: noJQ, extraEnvironment: cmux)
+        session = try readSession("cm1", home: home)
+        XCTAssertEqual(session["cmux_workspace"] as? String, "0D17AD56-CACC-49B0-BB94-B57BF40C26F1")
+        XCTAssertEqual(session["cmux_surface"] as? String, "FD79F840-8E6A-41B3-8DC1-0010D7F2FF23",
+                       "a new terminal rewrites the file even though the state did not change")
+
+        let file = sessionFile("cm1", home: home)
+        let before = try modificationDate(file)
+        usleep(50_000)
+        try runScript("idle", payload: payload, home: home, noJQ: noJQ, extraEnvironment: cmux)
+        XCTAssertEqual(try modificationDate(file), before, "same terminal, same state: no rewrite")
+
+        try runScript("working", payload: payload, home: home, noJQ: noJQ,
+                      extraEnvironment: ["CMUX_WORKSPACE_ID": #"x" "y"#, "CMUX_SURFACE_ID": "a/b"])
+        session = try readSession("cm1", home: home)
+        XCTAssertEqual(session["cmux_workspace"] as? String, "")
+        XCTAssertEqual(session["cmux_surface"] as? String, "")
     }
 
     func testScriptLifecycleWithJq() throws {
