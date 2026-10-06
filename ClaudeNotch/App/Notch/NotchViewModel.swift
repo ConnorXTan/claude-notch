@@ -31,6 +31,8 @@ final class NotchViewModel: ObservableObject {
     func open() {
         guard state != .open else { return }
         Log.note(Log.app, "open")
+        // A cmux workspace may have been renamed since the last session change.
+        SessionStore.shared.refreshCmux()
         withAnimation(NotchMetrics.openAnimation) { state = .open }
     }
 
