@@ -110,7 +110,56 @@ final class CmuxTests: XCTestCase {
         XCTAssertEqual(groups[1].location, "~/Downloads")
     }
 
+    // MARK: Process environment
+
+    func testParsesProcArgs() {
+        var bytes: [UInt8] = []
+        withUnsafeBytes(of: Int32(2)) { bytes += $0 }
+        bytes += Array("/usr/local/bin/claude".utf8) + [0, 0, 0, 0]
+        bytes += Array("claude".utf8) + [0] + Array("--resume".utf8) + [0]
+        bytes += Array("CMUX_SURFACE_ID=S1".utf8) + [0] + Array("EQ=a=b".utf8) + [0] + Array("NOEQ".utf8) + [0]
+        bytes += [0] + Array("APPLE_JUNK=x".utf8) + [0]
+        XCTAssertEqual(ProcessEnvironment.parse(bytes), ["CMUX_SURFACE_ID": "S1", "EQ": "a=b"])
+        XCTAssertNil(ProcessEnvironment.parse([1, 0]))
+    }
+
+    func testReadsThisProcesssEnvironment() throws {
+        let environment = try XCTUnwrap(ProcessEnvironment.variables(of: getpid()))
+        XCTAssertEqual(environment["PATH"], ProcessInfo.processInfo.environment["PATH"])
+        XCTAssertNil(ProcessEnvironment.variables(of: 0))
+    }
+
     // MARK: Store
+
+    /// A session idle since before the hook knew about cmux has no ids in
+    /// its file; its process's environment has them.
+    func testTheStoreFillsInCmuxFromTheProcessForOlderFiles() {
+        let store = SessionStore(directory: FileManager.default.temporaryDirectory)
+        store.projectRoot = { $0 }
+        store.cmuxLayoutReader = { nil }
+        var reads: [pid_t] = []
+        store.processEnvironment = { pid in
+            reads.append(pid)
+            switch pid {
+            case 42: return ["CMUX_WORKSPACE_ID": self.leaderboard, "CMUX_SURFACE_ID": "FD79"]
+            case 43: return ["CMUX_WORKSPACE_ID": "evil\"; do shell script", "CMUX_SURFACE_ID": ""]
+            default: return nil
+            }
+        }
+        let old = Session(id: "old", state: .idle, cwd: downloads, pid: 42, termProgram: "ghostty",
+                          title: "Leaderboard phase two")
+        let odd = Session(id: "odd", state: .idle, cwd: "/tmp/odd", pid: 43)
+        let new = session("new", workspace: portfolio, surface: "5584")
+
+        store.apply([old, odd, new])
+        XCTAssertEqual(store.sessions.first { $0.id == "old" }?.cmuxSurface, "FD79")
+        XCTAssertEqual(store.sessions.first { $0.id == "old" }?.terminalKind, .cmux)
+        XCTAssertFalse(store.sessions.first { $0.id == "odd" }!.inCmux, "only UUID-like ids are taken")
+        XCTAssertEqual(Set(store.groups.map(\.id)), ["cmux:" + leaderboard, "/tmp/odd", "cmux:" + portfolio])
+
+        store.apply([old, odd, new])
+        XCTAssertEqual(reads, [42, 43], "once per process; a file that has ids is not looked up")
+    }
 
     func testTheStoreReadsCmuxWhenACmuxSessionChanges() async throws {
         let dir = FileManager.default.temporaryDirectory
