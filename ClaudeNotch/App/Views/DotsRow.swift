@@ -1,3 +1,4 @@
+import AppKit
 import SwiftUI
 import ClaudeNotchKit
 
@@ -39,7 +40,9 @@ struct DotsGrid: View {
 
 /// A single status dot. Red and unacknowledged: it pulses. Done and idle
 /// (Claude has been waiting a while): it breathes slowly. With Reduce Motion
-/// on, the red dot gets a ring instead of a pulse.
+/// on, the red dot gets a ring instead of a pulse. The circle and its motion
+/// are Core Animation (`DotLayer`), so a dot that moves for hours costs no
+/// CPU.
 struct SessionDot: View {
     let session: Session?
     let acknowledged: Bool
@@ -47,16 +50,12 @@ struct SessionDot: View {
 
     @EnvironmentObject private var store: SessionStore
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    @State private var phase = false
 
-    private var pulsing: Bool {
-        guard let session else { return false }
-        return session.state == .needsYou && !acknowledged && !reduceMotion
-    }
-
-    private var breathing: Bool {
-        guard let session else { return false }
-        return session.state == .done && session.idle && !reduceMotion
+    private var motion: DotLayer.Motion {
+        guard let session, !reduceMotion else { return .still }
+        if session.state == .needsYou && !acknowledged { return .pulse }
+        if session.state == .done && session.idle { return .breathe }
+        return .still
     }
 
     private var ringed: Bool {
@@ -67,32 +66,18 @@ struct SessionDot: View {
     var body: some View {
         ZStack {
             if let session {
-                Circle()
-                    .fill(session.state.color)
+                DotLayer(color: NSColor(session.state.color), motion: motion, size: size)
                     .frame(width: size, height: size)
-                    .scaleEffect(pulsing && phase ? 1.4 : 1)
-                    .opacity(breathing && phase ? 0.45 : 1)
-                    .shadow(color: session.state.color.opacity(pulsing ? (phase ? 0.9 : 0.35) : 0),
-                            radius: pulsing && phase ? 5 : 2, x: 0, y: 0)
                     .overlay {
                         if ringed {
                             Circle().strokeBorder(.white.opacity(0.9), lineWidth: 1.5)
                                 .frame(width: size + 6, height: size + 6)
                         }
                     }
+                    .accessibilityElement()
                     .accessibilityLabel("\(store.projectName(of: session)) \(session.state.announcement)")
             }
         }
         .frame(width: size, height: size)
-        .animation(animation, value: phase)
-        .onAppear { phase = pulsing || breathing }
-        .onChange(of: pulsing) { _, new in phase = new || breathing }
-        .onChange(of: breathing) { _, new in phase = pulsing || new }
-    }
-
-    private var animation: Animation {
-        if pulsing { return .easeInOut(duration: 0.8).repeatForever(autoreverses: true) }
-        if breathing { return .easeInOut(duration: 2.2).repeatForever(autoreverses: true) }
-        return .easeOut(duration: 0.2)
     }
 }
