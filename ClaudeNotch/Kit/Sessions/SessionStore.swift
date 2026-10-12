@@ -261,6 +261,19 @@ public final class SessionStore: ObservableObject {
             ?? session.projectName
     }
 
+    /// What the closed notch's wing shows: only the sessions that need you,
+    /// in slot order, packed into `slotCount` places (nil after them). With
+    /// none, the closed notch is exactly the hardware notch.
+    public var wingSlots: [Session?] {
+        let red = sessions.filter { $0.state == .needsYou }
+        return (0..<Self.slotCount).map { $0 < red.count ? red[$0] : nil }
+    }
+
+    /// Sessions that need you beyond the wing's places.
+    public var wingOverflow: Int {
+        max(0, sessions.filter { $0.state == .needsYou }.count - Self.slotCount)
+    }
+
     /// Sessions beyond the four slots, in order of first appearance.
     public var overflow: [Session] {
         sessions.filter { slots[$0.id] == nil }

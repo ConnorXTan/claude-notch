@@ -2,14 +2,17 @@ import AppKit
 import SwiftUI
 import ClaudeNotchKit
 
-/// The dots in the closed wing: one per slot in a two-row grid, columns
+/// The dots in the closed shape: one per slot in a two-row grid, columns
 /// filled top to bottom, plus a "+N" when more sessions exist than slots.
 /// Empty slots keep their space so positions never shift.
 struct DotsGrid: View {
     @EnvironmentObject private var store: SessionStore
+    /// Exactly `SessionStore.slotCount` places.
+    let slots: [Session?]
+    let overflow: Int
 
     var body: some View {
-        let columns = WingLayout.columns(store.slotted)
+        let columns = WingLayout.columns(slots)
         HStack(spacing: WingLayout.gap) {
             ForEach(columns.indices, id: \.self) { c in
                 VStack(spacing: WingLayout.gap) {
@@ -25,13 +28,13 @@ struct DotsGrid: View {
                     }
                 }
             }
-            if !store.overflow.isEmpty {
-                Text("+\(store.overflow.count)")
+            if overflow > 0 {
+                Text("+\(overflow)")
                     .font(.system(size: 10, weight: .semibold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(.white.opacity(0.6))
                     .frame(width: WingLayout.overflowWidth, alignment: .leading)
-                    .accessibilityLabel("\(store.overflow.count) more sessions")
+                    .accessibilityLabel("\(overflow) more sessions")
             }
         }
         .animation(.smooth(duration: 0.25), value: columns.count)

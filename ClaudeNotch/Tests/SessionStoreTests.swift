@@ -127,6 +127,34 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertTrue(store.overflow.isEmpty)
     }
 
+    /// The closed notch is the hardware notch's size until a session needs
+    /// you; then the wing holds just those, packed, in slot order.
+    func testTheWingShowsOnlySessionsThatNeedYou() throws {
+        for (id, state) in [("a", "working"), ("b", "done"), ("c", "idle")] {
+            try write(id, state: state)
+            store.reload()
+        }
+        XCTAssertEqual(store.wingSlots.count, SessionStore.slotCount)
+        XCTAssertTrue(store.wingSlots.allSatisfy { $0 == nil })
+        XCTAssertEqual(WingLayout.wingWidth(store.wingSlots, overflow: store.wingOverflow), 0)
+
+        try write("c", state: "needs_you")
+        try write("a", state: "needs_you")
+        store.reload()
+        store.acknowledge("c")
+        XCTAssertEqual(store.wingSlots.compactMap { $0?.id }, ["a", "c"],
+                       "slot order, packed; acknowledged still needs you")
+        XCTAssertEqual(store.wingSlots.prefix(2).map { $0?.id }, ["a", "c"])
+        XCTAssertGreaterThan(WingLayout.wingWidth(store.wingSlots, overflow: store.wingOverflow), 0)
+
+        for id in ["d", "e", "f", "g", "h"] {
+            try write(id, state: "needs_you")
+            store.reload()
+        }
+        XCTAssertEqual(store.wingSlots.compactMap { $0?.id }, ["a", "c", "d", "e", "f", "g"])
+        XCTAssertEqual(store.wingOverflow, 1)
+    }
+
     func testReAddedSessionGetsAFreshSlot() throws {
         try write("a", state: "working")
         try write("b", state: "working")

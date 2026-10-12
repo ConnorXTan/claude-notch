@@ -2,10 +2,13 @@
 
 Turns the MacBook notch into a status light for Claude Code.
 
-Run the app and one dot per running Claude Code session appears beside the
-notch: yellow while Claude works, red when it is waiting on you, green when it
-is done. Hover to see the list; click a dot to jump to that terminal. The
-notch never had a job before; now it has one.
+Run the app and the notch stays the notch, the same size as the hardware,
+until a Claude Code session is waiting on you: then a red dot appears beside
+it, one per waiting session. Hover to see every session (yellow while Claude
+works, red when it is waiting on you, green when it is done); click a dot or
+a row to jump to that terminal. On a display without a notch, a pill over the
+menu bar shows every session's dot. The notch never had a job before; now it
+has one.
 
 ## Running it
 

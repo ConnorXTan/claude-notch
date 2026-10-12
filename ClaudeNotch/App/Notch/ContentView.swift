@@ -24,12 +24,13 @@ struct ContentView: View {
     @State private var windowHandle = WindowHandle()
 
     /// The wing the closed shape grows to the right of the physical notch to
-    /// hold the dots (the notch itself has no pixels). The closed shape is
-    /// shifted right by half of it so the notch part stays exactly over the
-    /// hardware.
+    /// hold the dots of sessions that need you (the notch itself has no
+    /// pixels); none, and the closed shape is just the notch. The closed
+    /// shape is shifted right by half of it so the notch part stays exactly
+    /// over the hardware.
     private var closedWing: CGFloat {
         guard vm.hasNotch else { return 0 }
-        return WingLayout.wingWidth(store.slotted, overflow: store.overflow.count)
+        return WingLayout.wingWidth(store.wingSlots, overflow: store.wingOverflow)
     }
 
     /// Where the closed shape sits relative to the container, so the hover
@@ -212,9 +213,10 @@ struct ContentView: View {
 // MARK: - Closed
 
 /// On a notched display: the physical notch (no pixels, so nothing is drawn
-/// there) plus a narrow wing on the right holding the dots two to a column.
-/// On other displays the closed shape is a pill over the menu bar and the
-/// dots sit centred in it.
+/// there), plus, while a session needs you, a narrow wing on the right
+/// holding those sessions' dots two to a column. On other displays the
+/// closed shape is a pill over the menu bar and every session's dot sits
+/// centred in it.
 struct ClosedLayout: View {
     @EnvironmentObject private var vm: NotchViewModel
     @EnvironmentObject private var store: SessionStore
@@ -224,9 +226,9 @@ struct ClosedLayout: View {
             HStack(spacing: 0) {
                 Color.clear
                     .frame(width: vm.closedSize.width, height: vm.closedSize.height)
-                let wing = WingLayout.wingWidth(store.slotted, overflow: store.overflow.count)
+                let wing = WingLayout.wingWidth(store.wingSlots, overflow: store.wingOverflow)
                 if wing > 0 {
-                    DotsGrid()
+                    DotsGrid(slots: store.wingSlots, overflow: store.wingOverflow)
                         .frame(width: wing - WingLayout.leadingInset - WingLayout.trailingInset,
                                height: vm.closedSize.height)
                         .padding(.leading, WingLayout.leadingInset)
@@ -236,7 +238,7 @@ struct ClosedLayout: View {
                 }
             }
         } else {
-            DotsGrid()
+            DotsGrid(slots: store.slotted, overflow: store.overflow.count)
                 .frame(width: vm.closedSize.width - NotchMetrics.closedInset * 2,
                        height: vm.closedSize.height)
                 .padding(.horizontal, NotchMetrics.closedInset)

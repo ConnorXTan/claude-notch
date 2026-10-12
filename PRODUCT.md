@@ -52,8 +52,10 @@ already has instead of a window, a Dock badge or a notification.
 
 - States: idle (grey), working (yellow), needs you (red, pulsing until
   acknowledged), done (green; slow pulse when Claude has been waiting a while).
-- Up to four dots in the closed notch; further sessions appear only in the
-  open list with a "+N" marker.
+- The closed notch is the hardware notch's size; a wing beside it shows a
+  dot only for sessions that need you (up to six, then "+N"). Every session
+  is in the open list. On a display without a notch the pill shows every
+  session's dot.
 - Open notch: one row per session with folder name, state and time since the
   last change; click a row to focus its terminal.
 - When a session turns red, the notch widens for three seconds to show the
