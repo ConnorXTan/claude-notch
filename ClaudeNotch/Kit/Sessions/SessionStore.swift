@@ -22,9 +22,17 @@ public final class SessionStore: ObservableObject {
 
     public static let shared = SessionStore(directory: defaultDirectory)
 
-    /// A session that just switched to `needsYou`.
+    /// A session that just started needing the user, or just finished.
     public struct Alert: Equatable {
+        public enum Kind: Equatable {
+            /// Just turned red: Claude is waiting on the user.
+            case needsYou
+            /// Just went from working to done: a task finished.
+            case finished
+        }
+
         public let session: Session
+        public let kind: Kind
         public let at: Date
     }
 
@@ -42,7 +50,7 @@ public final class SessionStore: ObservableObject {
     /// Every known session, slotted ones first in slot order, then overflow in
     /// order of first appearance.
     @Published public private(set) var sessions: [Session] = []
-    /// The most recent red transition; observed by the coordinator.
+    /// The most recent red or finished transition; observed by the coordinator.
     @Published public private(set) var alert: Alert?
     /// Sessions whose pulse has been acknowledged (until their state changes).
     @Published public private(set) var acknowledged: Set<String> = []
@@ -157,15 +165,20 @@ public final class SessionStore: ObservableObject {
             firstSeen[session.id] = Date(timeIntervalSinceReferenceDate: Double(order))
         }
 
+        // A red transition outranks a finish that arrives with it.
+        var newAlert: Alert?
         for session in found {
             if let old = previous[session.id], old.state != session.state {
                 acknowledged.remove(session.id)
             }
-            let wasRed = previous[session.id]?.state == .needsYou
-            if session.state == .needsYou && !wasRed {
-                alert = Alert(session: session, at: Date())
+            let before = previous[session.id]?.state
+            if session.state == .needsYou && before != .needsYou {
+                newAlert = Alert(session: session, kind: .needsYou, at: Date())
+            } else if session.state == .done, before == .working, newAlert?.kind != .needsYou {
+                newAlert = Alert(session: session, kind: .finished, at: Date())
             }
         }
+        if let newAlert { alert = newAlert }
 
         // Fill free slots in order of first appearance.
         let taken = Set(slots.values)

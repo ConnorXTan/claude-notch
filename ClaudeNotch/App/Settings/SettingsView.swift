@@ -6,6 +6,7 @@ struct SettingsView: View {
     @AppStorage(Preferences.showOnAllDisplaysKey) private var showOnAllDisplays = true
     @AppStorage(Preferences.openOnHoverKey) private var openOnHover = true
     @AppStorage(Preferences.alertSoundKey) private var alertSound = true
+    @AppStorage(Preferences.notifyOnFinishKey) private var notifyOnFinish = true
     @ObservedObject private var hooks = HooksModel.shared
 
     var body: some View {
@@ -13,7 +14,8 @@ struct SettingsView: View {
             Section("Notch") {
                 Toggle("Show on every display", isOn: $showOnAllDisplays)
                 Toggle("Open when the pointer rests on it", isOn: $openOnHover)
-                Toggle("Play a sound when a session needs you", isOn: $alertSound)
+                Toggle("Tell me when a task finishes", isOn: $notifyOnFinish)
+                Toggle("Play a sound with alerts", isOn: $alertSound)
             }
 
             Section {

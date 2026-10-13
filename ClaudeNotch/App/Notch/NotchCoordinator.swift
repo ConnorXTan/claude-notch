@@ -15,6 +15,8 @@ final class NotchCoordinator: ObservableObject {
         var title: String
         var detail: String
         var tint: Color = .white
+        /// A session needs you: a finish arriving meanwhile does not replace it.
+        var urgent = false
     }
 
     @Published private(set) var peek: Peek?
@@ -42,8 +44,9 @@ final class NotchCoordinator: ObservableObject {
 
     // MARK: Alerts
 
-    /// Reacts to sessions turning red: a peek beside the notch (unless a
-    /// notch is already open and showing the list) and, if enabled, a sound.
+    /// Reacts to sessions turning red or finishing a task: a peek beside the
+    /// notch (unless a notch is already open and showing the list) and, if
+    /// enabled, a sound.
     func bind(to store: SessionStore) {
         store.$alert
             .compactMap { $0 }
@@ -53,13 +56,31 @@ final class NotchCoordinator: ObservableObject {
     }
 
     private func announce(_ alert: SessionStore.Alert) {
+        switch alert.kind {
+        case .needsYou:
+            present(alert, sound: "Glass")
+        case .finished:
+            // Not for the terminal you are looking at: every reply in the
+            // session you are typing in would chime.
+            guard Preferences.notifyOnFinish else { return }
+            Task { [weak self] in
+                guard await !TerminalFocuser.isWatching(alert.session) else { return }
+                self?.present(alert, sound: "Pop")
+            }
+        }
+    }
+
+    private func present(_ alert: SessionStore.Alert, sound: String) {
+        let urgent = alert.kind == .needsYou
+        if !urgent, peek?.urgent == true { return }
         if Preferences.alertSound {
-            NSSound(named: "Glass")?.play()
+            NSSound(named: sound)?.play()
         }
         guard !anyOpen else { return }
         showPeek(Peek(title: SessionStore.shared.projectName(of: alert.session),
                       detail: alert.session.state.label,
-                      tint: alert.session.state.color),
+                      tint: alert.session.state.color,
+                      urgent: urgent),
                  for: .seconds(3))
     }
 

@@ -203,6 +203,26 @@ public enum TerminalFocuser {
         return .activatedApp
     }
 
+    /// Whether the user is looking at the session's terminal right now, so
+    /// telling them it finished would only interrupt: its app is frontmost
+    /// and, in cmux, its terminal is the focused one. Other terminals can
+    /// only be judged by the app.
+    @MainActor
+    public static func isWatching(_ session: Session) async -> Bool {
+        let front = NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+        guard isWatching(session, frontmost: front, focusedSurface: nil) else { return false }
+        guard session.inCmux, !session.cmuxSurface.isEmpty else { return true }
+        return isWatching(session, frontmost: front, focusedSurface: await Cmux.focusedSurface())
+    }
+
+    /// The rule, apart from asking the system. `focusedSurface` is cmux's
+    /// focused terminal, nil when not known (yet).
+    public static func isWatching(_ session: Session, frontmost: String?, focusedSurface: String?) -> Bool {
+        guard let front = frontmost, session.terminalKind.bundleIdentifiers.contains(front) else { return false }
+        guard session.inCmux, !session.cmuxSurface.isEmpty, let focusedSurface else { return true }
+        return focusedSurface == session.cmuxSurface
+    }
+
     /// cmux shells report Ghostty (or tmux, inside it), so cmux is told
     /// apart by the ids it handed the session rather than by `$TERM_PROGRAM`.
     @MainActor

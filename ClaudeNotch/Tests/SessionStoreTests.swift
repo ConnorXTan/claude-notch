@@ -198,6 +198,40 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertEqual(store.alert?.session.id, "a")
     }
 
+    func testFinishingATaskPublishesAFinishedAlert() throws {
+        try write("a", state: "done")
+        try write("b", state: "working")
+        store.reload()
+        XCTAssertEqual(store.alert?.kind, nil, "sessions already done at launch are not news")
+
+        try write("b", state: "done")
+        store.reload()
+        XCTAssertEqual(store.alert?.session.id, "b")
+        XCTAssertEqual(store.alert?.kind, .finished)
+        let first = store.alert
+
+        try write("b", state: "done", idle: true)
+        store.reload()
+        XCTAssertEqual(store.alert, first, "done going idle is the same finish")
+
+        try write("c", state: "idle")
+        store.reload()
+        try write("c", state: "done")
+        store.reload()
+        XCTAssertEqual(store.alert, first, "only working to done is a finished task")
+    }
+
+    func testARedTurnOutranksAFinishInTheSameRead() throws {
+        try write("a", state: "working")
+        try write("b", state: "working")
+        store.reload()
+        try write("a", state: "needs_you")
+        try write("b", state: "done")
+        store.reload()
+        XCTAssertEqual(store.alert?.kind, .needsYou)
+        XCTAssertEqual(store.alert?.session.id, "a")
+    }
+
     func testAcknowledgeResetsWhenStateChanges() throws {
         try write("a", state: "needs_you")
         store.reload()

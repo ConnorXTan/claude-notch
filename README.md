@@ -54,8 +54,13 @@ workspace under it, including the teammates an agent team starts in its own
 tmux. Clicking a header goes to the session in it that needs you most.
 
 When a session turns red the notch widens for three seconds to say which
-folder and plays a sound (Settings turns it off). The dot keeps pulsing until
-you click it or the state changes.
+project and plays a sound (Settings turns it off). The dot keeps pulsing until
+you click it or the state changes. When a task finishes (working to done) it
+does the same in green with a softer sound, unless you are looking at that
+session's terminal already (in cmux, its tab is the focused one; elsewhere,
+its terminal app is in front), so replies in the session you are typing in
+stay quiet. A red peek on screen is never replaced by a finish. Settings
+turns finish alerts off.
 
 **Terminals.** Clicking a session brings its terminal forward: the exact tab
 in iTerm and Terminal (via AppleScript, which asks for Automation permission

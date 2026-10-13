@@ -7,12 +7,14 @@ public enum Preferences {
     public static let showOnAllDisplaysKey = "showOnAllDisplays"
     public static let openOnHoverKey = "openOnHover"
     public static let alertSoundKey = "alertSound"
+    public static let notifyOnFinishKey = "notifyOnFinish"
 
     public static var defaults: [String: Any] {
         [
             showOnAllDisplaysKey: true,
             openOnHoverKey: true,
             alertSoundKey: true,
+            notifyOnFinishKey: true,
         ]
     }
 
@@ -25,4 +27,5 @@ public enum Preferences {
     public static var showOnAllDisplays: Bool { UserDefaults.standard.bool(forKey: showOnAllDisplaysKey) }
     public static var openOnHover: Bool { UserDefaults.standard.bool(forKey: openOnHoverKey) }
     public static var alertSound: Bool { UserDefaults.standard.bool(forKey: alertSoundKey) }
+    public static var notifyOnFinish: Bool { UserDefaults.standard.bool(forKey: notifyOnFinishKey) }
 }

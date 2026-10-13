@@ -69,6 +69,25 @@ final class CmuxTests: XCTestCase {
         XCTAssertTrue(script.contains(#"tell application id "com.cmuxterm.app""#))
     }
 
+    // MARK: Watching
+
+    /// A finished task is not announced for the terminal you are looking at.
+    func testWatchingMeansThatTerminalIsInFront() {
+        let cmux = session("a", workspace: leaderboard, surface: "FD79")
+        XCTAssertTrue(TerminalFocuser.isWatching(cmux, frontmost: Cmux.bundleIdentifier, focusedSurface: "FD79"))
+        XCTAssertFalse(TerminalFocuser.isWatching(cmux, frontmost: Cmux.bundleIdentifier, focusedSurface: "5584"),
+                       "another cmux tab is in front")
+        XCTAssertFalse(TerminalFocuser.isWatching(cmux, frontmost: "com.apple.Safari", focusedSurface: "FD79"))
+        XCTAssertFalse(TerminalFocuser.isWatching(cmux, frontmost: nil, focusedSurface: nil))
+
+        let iterm = Session(id: "b", state: .done, cwd: "/p", termProgram: "iTerm.app")
+        XCTAssertTrue(TerminalFocuser.isWatching(iterm, frontmost: "com.googlecode.iterm2", focusedSurface: nil),
+                      "outside cmux only the app can be judged")
+        XCTAssertFalse(TerminalFocuser.isWatching(iterm, frontmost: Cmux.bundleIdentifier, focusedSurface: nil))
+        let unknown = Session(id: "c", state: .done, cwd: "/p", termProgram: "")
+        XCTAssertFalse(TerminalFocuser.isWatching(unknown, frontmost: "com.apple.Terminal", focusedSurface: nil))
+    }
+
     // MARK: Grouping
 
     /// Everything here runs from ~/Downloads, which grouped by repository

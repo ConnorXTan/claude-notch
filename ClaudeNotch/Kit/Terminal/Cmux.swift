@@ -116,6 +116,16 @@ public enum Cmux {
         """
     }
 
+    /// The terminal focused in cmux's front window.
+    static let focusedSurfaceScript = """
+    if application id "\(bundleIdentifier)" is not running then return ""
+    tell application id "\(bundleIdentifier)"
+        with timeout of 2 seconds
+            return id of focused terminal of selected tab of front window
+        end timeout
+    end tell
+    """
+
     // MARK: Reading
 
     public static var isRunning: Bool {
@@ -130,6 +140,17 @@ public enum Cmux {
         return await Task.detached(priority: .utility) { () -> Layout? in
             guard let output = runOsascript(layoutScript) else { return nil }
             return Layout.parse(output)
+        }.value
+    }
+
+    /// The id of the terminal focused in cmux's front window, read off the
+    /// main thread. Nil when cmux is not running, has no window, or will not
+    /// answer.
+    public static func focusedSurface() async -> String? {
+        guard isRunning else { return nil }
+        return await Task.detached(priority: .userInitiated) { () -> String? in
+            let id = runOsascript(focusedSurfaceScript)?.trimmingCharacters(in: .whitespacesAndNewlines)
+            return id?.isEmpty == false ? id : nil
         }.value
     }
 
