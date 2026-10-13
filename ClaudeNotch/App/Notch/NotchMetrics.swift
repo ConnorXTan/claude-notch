@@ -12,8 +12,10 @@ enum NotchMetrics {
     /// leaves 87 pt a side, enough for "Claude Code" (70 pt) and
     /// "12 terminals" (65 pt) on one line.
     static let openWidth: CGFloat = 440
-    /// Width of the closed shape while an alert peek is showing.
-    static let peekWidth: CGFloat = 640
+    /// The margin that shows between a shape's visible edge and its text,
+    /// in every layout: the open panel's header and project names sit this
+    /// far in, and so does the peek's text.
+    static let textMargin: CGFloat = 14
 
     /// Horizontal inset of content inside the closed shape.
     static let closedInset: CGFloat = 10

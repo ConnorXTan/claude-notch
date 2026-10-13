@@ -48,7 +48,7 @@
     "motion": [
       { "name": "open", "value": "spring(response: 0.42, dampingFraction: 0.8)", "purpose": "Closed to open; animates the silhouette radii and the panel's scale-from-0.9 + fade transition." },
       { "name": "close", "value": "spring(response: 0.45, dampingFraction: 1.0)", "purpose": "Open to closed; critically damped so the notch settles without overshoot." },
-      { "name": "peek", "value": "smooth(duration: 0.3)", "purpose": "The closed shape widening to 640 pt for 3 s when a session turns red; content fades." },
+      { "name": "peek", "value": "smooth(duration: 0.3)", "purpose": "The closed shape widening to fit its words for 3 s when a session turns red or a task finishes; revealed from the closed box." },
       { "name": "wing", "value": "smooth(duration: 0.3)", "purpose": "The closed wing growing or shrinking as dot slots change." },
       { "name": "slots", "value": "smooth(duration: 0.25)", "purpose": "Dots row when the number of drawn slots changes." },
       { "name": "pulse", "value": "easeInOut(duration: 0.8).repeatForever(autoreverses: true)", "purpose": "Unacknowledged red dot: scale 1 to 1.4, glow 2 pt/35% to 5 pt/90%." },
@@ -84,7 +84,7 @@
       "refersTo": "peek",
       "description": "The closed shape widened for 3 s when a session turns red: folder on the left of the notch, the state word on the right, a clear gap over the hardware between them.",
       "html": "<div class=\"ds-peek\"><span class=\"ds-peek-title\">claude-notch</span><span class=\"ds-peek-gap\"></span><span class=\"ds-peek-detail\">needs you</span></div>",
-      "css": ".ds-peek { display: flex; align-items: center; width: 640px; max-width: 100%; height: 32px; padding: 0 24px; box-sizing: border-box; background: #000; border-radius: 0 0 14px 14px; } .ds-peek-title { flex: 1; text-align: right; font: 600 13px system-ui, sans-serif; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-peek-gap { width: 195px; flex: none; } .ds-peek-detail { flex: 1; text-align: left; font: 500 13px system-ui, sans-serif; color: #ff453b; white-space: nowrap; }"
+      "css": ".ds-peek { display: inline-flex; align-items: center; max-width: 100%; height: 32px; padding: 0 20px; box-sizing: border-box; background: #000; border-radius: 0 0 14px 14px; } .ds-peek-title { text-align: right; font: 600 13px system-ui, sans-serif; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } .ds-peek-gap { width: 199px; flex: none; } .ds-peek-detail { text-align: left; font: 500 13px system-ui, sans-serif; color: #ff453b; white-space: nowrap; }"
     },
     {
       "name": "Open Panel Header",

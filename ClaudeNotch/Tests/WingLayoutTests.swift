@@ -24,11 +24,11 @@ final class WingLayoutTests: XCTestCase {
         let two: [Session?] = [s("1"), s("2"), nil, nil, nil, nil]
         let three: [Session?] = [s("1"), s("2"), s("3"), nil, nil, nil]
         let six: [Session?] = [s("1"), s("2"), s("3"), s("4"), s("5"), s("6")]
-        XCTAssertEqual(WingLayout.wingWidth(one, overflow: 0), 27, "8 leading + one 7 pt column + 12 trailing")
-        XCTAssertEqual(WingLayout.wingWidth(two, overflow: 0), 27, "the second dot goes under the first")
-        XCTAssertEqual(WingLayout.wingWidth(three, overflow: 0), 39)
-        XCTAssertEqual(WingLayout.wingWidth(six, overflow: 0), 51)
-        XCTAssertEqual(WingLayout.wingWidth(six, overflow: 1), 72, "+N is 16 pt after a 5 pt gap")
+        XCTAssertEqual(WingLayout.wingWidth(one, overflow: 0), 31, "8 leading + one 7 pt column + 16 trailing")
+        XCTAssertEqual(WingLayout.wingWidth(two, overflow: 0), 31, "the second dot goes under the first")
+        XCTAssertEqual(WingLayout.wingWidth(three, overflow: 0), 43)
+        XCTAssertEqual(WingLayout.wingWidth(six, overflow: 0), 55)
+        XCTAssertEqual(WingLayout.wingWidth(six, overflow: 1), 76, "+N is 16 pt after a 5 pt gap")
         XCTAssertEqual(WingLayout.wingWidth([nil, nil, nil, nil, nil, nil], overflow: 0), 0)
     }
 }

@@ -8,11 +8,13 @@ public enum WingLayout {
     public static let dot: CGFloat = 7
     public static let gap: CGFloat = 5
     public static let rows = 2
-    /// Space between the physical notch and the first column.
+    /// Space between the closed shape's notch part and the first column:
+    /// with the 2 pt bleed, 10 pt from the hardware notch.
     public static let leadingInset: CGFloat = 8
     /// Space after the last column. The shape's body sits inside its flared
-    /// top corner by the top radius (6 pt), so this is 6 pt of visible margin.
-    public static let trailingInset: CGFloat = 12
+    /// top corner by the top radius (6 pt), so this is 10 pt of visible
+    /// margin, the same as on the notch side, so the dots sit centred.
+    public static let trailingInset: CGFloat = 16
     public static let overflowWidth: CGFloat = 16
 
     /// The slots as columns of `rows`, filled top to bottom then left to

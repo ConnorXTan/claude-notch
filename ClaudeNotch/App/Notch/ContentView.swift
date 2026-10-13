@@ -101,9 +101,9 @@ struct ContentView: View {
         case .panel:
             size = CGSize(width: NotchMetrics.openWidth, height: openHeight)
             offset = 0
-        case .smallBox where coordinator.peek != nil:
-            size = CGSize(width: NotchMetrics.peekWidth, height: vm.closedSize.height)
-            offset = 0
+        case .smallBox where coordinator.peek != nil && vm.hasNotch:
+            size = PeekLayout.size(coordinator.peek!, closed: vm.closedSize)
+            offset = PeekLayout.shift(coordinator.peek!, closed: vm.closedSize)
         case .smallBox where vm.hasNotch:
             size = CGSize(width: vm.closedSize.width + closedWing, height: vm.closedSize.height)
             offset = closedWing / 2
@@ -126,9 +126,12 @@ struct ContentView: View {
                 .zIndex(1)
         case .closed:
             if let peek = coordinator.peek {
+                let shift = vm.hasNotch ? PeekLayout.shift(peek, closed: vm.closedSize) : 0
                 PeekLayout(peek: peek)
                     .surface(radii: NotchMetrics.closedRadii)
-                    .transition(Reveal.transition(closed: vm.closedSize, wing: closedWing, lift: 0))
+                    .transition(Reveal.transition(closed: vm.closedSize, wing: closedWing, shift: shift,
+                                                  radii: NotchMetrics.closedRadii, lift: 0))
+                    .offset(x: shift)
                     .zIndex(1)
             } else {
                 ClosedLayout()
@@ -251,11 +254,47 @@ struct ClosedLayout: View {
 // MARK: - Peek
 
 /// The closed shape widened to show a line of text either side of the notch:
-/// the folder on the left, what it wants on the right. Without a notch the
-/// two sit together in a pill.
+/// the project to the left, the state to the right. Each side hugs its word,
+/// which sits `textMargin` inside the visible edge (as text does in the open
+/// panel) and 5 pt off the notch, so a short name makes a short peek; a name
+/// too long for the window is cut in the middle. The two sides differ, so
+/// the shape is shifted to keep its gap over the notch. On a display without
+/// a notch the two sit together in a pill.
 struct PeekLayout: View {
     @EnvironmentObject private var vm: NotchViewModel
     let peek: NotchCoordinator.Peek
+
+    /// Between a word and the notch's clear gap, as in the open header.
+    static let notchGap = NotchMetrics.closedInset / 2
+    /// From the shape's edge to its text: the top flare, inside which the
+    /// sides sit, plus the visible margin.
+    static let edge = NotchMetrics.closedRadii.top + NotchMetrics.textMargin
+
+    private static let titleFont = NSFont.systemFont(ofSize: 13, weight: .semibold)
+    private static let detailFont = NSFont.systemFont(ofSize: 13, weight: .medium)
+
+    /// The two words' widths as laid out, each capped so its side stays
+    /// inside the window beside the notch.
+    static func textWidths(_ peek: NotchCoordinator.Peek, closed: CGSize) -> (title: CGFloat, detail: CGFloat) {
+        let cap = (NotchMetrics.windowSize.width - closed.width) / 2 - edge - notchGap
+        return (min(measure(peek.title, titleFont), cap), min(measure(peek.detail, detailFont), cap))
+    }
+
+    /// The whole shape on a notched display.
+    static func size(_ peek: NotchCoordinator.Peek, closed: CGSize) -> CGSize {
+        let w = textWidths(peek, closed: closed)
+        return CGSize(width: w.title + w.detail + (edge + notchGap) * 2 + closed.width, height: closed.height)
+    }
+
+    /// How far right of the notch the shape's centre sits.
+    static func shift(_ peek: NotchCoordinator.Peek, closed: CGSize) -> CGFloat {
+        let w = textWidths(peek, closed: closed)
+        return (w.detail - w.title) / 2
+    }
+
+    private static func measure(_ text: String, _ font: NSFont) -> CGFloat {
+        ceil((text as NSString).size(withAttributes: [.font: font]).width) + 1
+    }
 
     private var title: some View {
         Text(peek.title)
@@ -274,20 +313,21 @@ struct PeekLayout: View {
 
     var body: some View {
         if vm.hasNotch {
+            let widths = Self.textWidths(peek, closed: vm.closedSize)
             HStack(spacing: 0) {
-                title.frame(maxWidth: .infinity, alignment: .trailing)
+                title.frame(width: widths.title, alignment: .trailing)
                 Color.clear
-                    .frame(width: vm.closedSize.width + NotchMetrics.closedInset)
-                detail.frame(maxWidth: .infinity, alignment: .leading)
+                    .frame(width: vm.closedSize.width + Self.notchGap * 2)
+                detail.frame(width: widths.detail, alignment: .leading)
             }
-            .padding(.horizontal, 24)
-            .frame(width: NotchMetrics.peekWidth, height: vm.closedSize.height)
+            .padding(.horizontal, Self.edge)
+            .frame(height: vm.closedSize.height)
         } else {
             HStack(spacing: 8) {
                 title
                 detail
             }
-            .padding(.horizontal, 24)
+            .padding(.horizontal, Self.edge)
             .frame(minWidth: vm.closedSize.width)
             .frame(height: vm.closedSize.height)
         }

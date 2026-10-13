@@ -82,7 +82,8 @@ spacing:
   md: "10px"
   dot-lead: "12px"
   dot-trail: "18px"
-  peek-x: "24px"
+  peek-x: "20px"
+  text-margin: "14px"
 components:
   session-dot:
     size: "8px"
@@ -104,8 +105,8 @@ components:
     padding: "0 10px"
   peek:
     backgroundColor: "{colors.notch-black}"
-    padding: "0 24px"
-    width: "640px"
+    padding: "0 20px"
+    width: "fit"
   peek-title:
     textColor: "{colors.white}"
     typography: "{typography.title}"
@@ -245,9 +246,9 @@ centred on the physical notch (not the screen). The closed shape's size is
 measured per screen: the notch's width plus a 2 pt bleed each side, and the
 notch's height (or the menu bar height on displays without a notch).
 
-- **Closed, notched display:** the notch itself is a clear frame; a narrow black wing to its right holds the dots in a two-row grid (7 pt dots, 5 pt gaps, columns filled top to bottom). Wing width = 8 pt leading + columns + 12 pt trailing (the trailing 12 includes the 6 pt top flare, so 6 pt reads as margin): one column (1–2 sessions) 27 pt, two 39 pt, three (5–6) 51 pt; with "+N" (16 pt wide, after one more 5 pt gap) 72 pt. The whole shape shifts right by half the wing so the notch part stays over the hardware. Kept this narrow (a 6-session wing is 51 pt against the earlier 92 pt for four) so the menu bar extras beside the notch stay uncovered; a floating, centred island was tried and rejected on 2026-09-24 in favour of the attached rectangle.
+- **Closed, notched display:** the notch itself is a clear frame; a narrow black wing to its right holds the dots in a two-row grid (7 pt dots, 5 pt gaps, columns filled top to bottom). It appears only while a session needs you, holding just those dots; otherwise the closed shape is the notch alone. Wing width = 8 pt leading + columns + 16 pt trailing (the trailing 16 includes the 6 pt top flare, so 10 pt reads as margin, matching the 10 pt between the hardware notch and the first column): one column (1–2 sessions) 31 pt, two 43 pt, three (5–6) 55 pt; with "+N" (16 pt wide, after one more 5 pt gap) 76 pt. The whole shape shifts right by half the wing so the notch part stays over the hardware. Kept this narrow (a 6-session wing is 55 pt against the earlier 92 pt for four) so the menu bar extras beside the notch stay uncovered; a floating, centred island was tried and rejected on 2026-09-24 in favour of the attached rectangle.
 - **Closed, other displays:** a black pill over the menu bar, dots centred, 10 pt horizontal inset.
-- **Peek:** the closed shape widened to 640 pt, 24 pt horizontal padding; title right-aligned left of the notch, detail left-aligned right of it, with a clear gap of the notch width + 10 pt between. Without a notch, the two sit in one pill 8 pt apart.
+- **Peek:** the closed shape widened just enough for its words: each side is its word's width + 5 pt to the notch + 20 pt to the edge (the 6 pt top flare plus the 14 pt text margin the open panel uses), so text always sits 14 pt inside the visible edge. The two sides differ, so the shape is offset by half the difference to keep its clear gap (the notch width + 10 pt) over the hardware; a side never passes the window's edge, and a long title is cut in the middle. The reveal ends on the closed radii (6/14), not the panel's. Without a notch, the two sit in one pill 8 pt apart with the same 20 pt sides.
 - **Open:** 440 pt wide (was 400; beside the header's clear notch gap each side has 87 pt, enough for "Claude Code" at 70 pt and "12 terminals" at 65 pt on one line), 23 pt horizontal padding (the 19 pt top flare, inside which the shape's sides sit, plus 4 pt, so text lands 14 pt inside the visible edge and row dots 26 pt) and 10 pt bottom padding, 4 pt between header and list. The header row is the closed height and leaves the same notch-width + 10 pt clear gap in its middle. Rows are 32 pt with 1 pt between; after six rows the list scrolls at 6 × 33 = 198 pt.
 - **Row:** 10 pt horizontal padding, 10 pt between dot, name, ID and state; the age column is a fixed 32 pt, right-aligned; at least 8 pt of spacer before the state word.
 - **Empty state:** centred, 6 pt vertical rhythm, minimum 64 pt tall, 6 pt vertical padding.
@@ -299,7 +300,7 @@ rectangles; the install button is a capsule.
 - Tapping the dots row toggles the panel; tapping a dot focuses that session's terminal.
 
 ### Peek
-- The closed shape widened to 640 pt for 3 s when a session turns red (`smooth 0.3 s`, fading in and out).
+- The closed shape widened to fit its words for 3 s when a session turns red, or when a task finishes in a terminal you are not looking at (`smooth 0.3 s`, revealed from the closed box). A red peek is never replaced by a finish.
 - Title: folder name, 13 pt semibold white, middle-truncated. Detail: the state word, 13 pt medium in the state's colour.
 
 ### Open Panel Header
